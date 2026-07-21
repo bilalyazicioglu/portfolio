@@ -1,0 +1,20 @@
+---
+title: "Notes on Shipping Slow"
+summary: "Speed is a proxy metric. Some notes on when slowing down actually got things done faster."
+date: "2026-04-18"
+tags: ["engineering", "process"]
+---
+
+"Move fast" is good advice until the fast path is the wrong path. I've shipped things quickly that I then spent three times as long unwinding.
+
+## Where slow wins
+
+1. **Data models.** Renaming a column is a migration. Renaming a concept is a rewrite. Spend the extra day here.
+2. **Public APIs.** Once something is called from outside your codebase, every future change carries the cost of a breaking change.
+3. **The first user-facing copy.** Placeholder text has a way of shipping to production. Write it like it's final.
+
+## Where fast wins
+
+Almost everything else. Internal tools, prototypes, anything behind a flag, anything you can delete in a day if it's wrong.
+
+The skill isn't "move fast" or "move slow" — it's telling the two apart before you've committed to either.
