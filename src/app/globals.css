@@ -1,26 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-canvas: #eeece6;
+  --color-surface: #fdfcf9;
+  --color-ink: #14140f;
+  --color-muted: #6d6c64;
+  --color-accent: #ff5a1f;
+  --color-accent-ink: #fff8f2;
+  --color-line: #14140f;
+
+  --font-display: var(--font-silkscreen), monospace;
+  --font-ui: var(--font-jetbrains), ui-monospace, monospace;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  border-color: var(--color-line);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+}
+
+.bg-grid {
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-ink) 7%, transparent) 0,
+    color-mix(in srgb, var(--color-ink) 7%, transparent) 1px,
+    transparent 1px,
+    transparent 120px
+  );
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Blog post body copy: standard readable font, per site convention. */
+.prose-post {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.prose-post h2 {
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose-post h3 {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-post p {
+  margin-top: 1.1rem;
+  margin-bottom: 1.1rem;
+}
+
+.prose-post ul,
+.prose-post ol {
+  margin-top: 1.1rem;
+  margin-bottom: 1.1rem;
+  padding-left: 1.4rem;
+}
+
+.prose-post ul {
+  list-style: square;
+}
+
+.prose-post ol {
+  list-style: decimal;
+}
+
+.prose-post li {
+  margin-top: 0.4rem;
+}
+
+.prose-post li::marker {
+  color: var(--color-accent);
+}
+
+.prose-post strong {
+  font-weight: 700;
+}
+
+.prose-post a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-accent);
+}
+
+.prose-post code {
+  font-family: var(--font-ui);
+  background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
 }

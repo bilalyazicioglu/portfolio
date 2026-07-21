@@ -1,0 +1,22 @@
+---
+title: "A Build Pipeline I Actually Understand"
+summary: "After years of accumulating config, I rebuilt my pipeline from scratch with one rule: no step I can't explain in a sentence."
+date: "2026-02-11"
+tags: ["engineering", "tooling"]
+---
+
+Every build pipeline I've inherited has had at least one step nobody remembers the purpose of. Usually it's load-bearing anyway.
+
+So the last time I set one up from scratch, I gave myself one rule: every step has to be explainable in a single sentence, to someone who's never seen the repo.
+
+## The pipeline
+
+- **Install** — restore dependencies from the lockfile, nothing else.
+- **Typecheck** — catch the errors that are cheap to catch before anything expensive runs.
+- **Test** — unit and integration, no network calls.
+- **Build** — produce the artifact, deterministically, from source only.
+- **Publish** — push the artifact somewhere, only on a passing build.
+
+Five steps. If a sixth step feels necessary, that's usually a sign one of the first five is doing too little, not that I need more stages.
+
+The pipeline that's easy to explain is also the pipeline that's easy to debug at 2am. That's the actual reason this matters.
