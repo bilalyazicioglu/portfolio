@@ -67,10 +67,6 @@ const personJsonLd = {
   url: siteConfig.url,
   image: siteConfig.avatarUrl,
   jobTitle: siteConfig.role,
-  worksFor: {
-    "@type": "Organization",
-    name: siteConfig.name,
-  },
   alumniOf: [
     {
       "@type": "EducationalOrganization",
