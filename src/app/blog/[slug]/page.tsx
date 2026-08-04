@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllSlugs, getPostBySlug } from "@/lib/blog";
 import { CtaBand } from "@/components/CtaBand";
+import { ViewCounter } from "@/components/ViewCounter";
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
@@ -62,6 +63,8 @@ export default async function BlogPostPage({
           <span className="font-ui text-[11px] uppercase tracking-wider text-muted">
             {post.readingTime}
           </span>
+          <span className="text-ink/20">/</span>
+          <ViewCounter slug={slug} />
         </div>
         <h1 className="font-display text-3xl leading-[1.2] sm:text-5xl">
           {post.title}
