@@ -26,9 +26,9 @@ export type SiteConfig = {
 export const siteConfig: SiteConfig = {
   name: "Ahmet Bilal Yazıcıoğlu",
   heroName: "Bilal Yazicioglu",
-  role: "Software Engineering Student",
-  tagline: "Full-stack developer & distributed systems enthusiast.",
-  bio: "Software Engineering student at Marmara University with practical experience in full-stack development and distributed systems, complemented by a solid understanding of business administration frameworks. Proficient in Java, Go, and Python, with expertise in Spring Boot, Docker, and PostgreSQL. Committed to building scalable architectures and optimizing CI/CD workflows.",
+  role: "Computer Engineering & Business Administration Student",
+  tagline: "Code, hoops, nature, and exploring new places.",
+  bio: "I'm a Computer Engineering and Business Administration student at Marmara University (enrolled in 2024), including a memorable Erasmus semester at Universidad de Oviedo in Spain. Beyond tech and classes, I feel most at ease on the basketball court, traveling to new places, hanging out with friends, or recharging on long hikes in nature.",
   location: "Istanbul, TR",
   email: "ahmetbilalyazicioglu@gmail.com",
   availability: "Open to internships & collaborations",
