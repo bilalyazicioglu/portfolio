@@ -5,14 +5,17 @@ import { useEffect, useState } from "react";
 export function ViewCounter({
   slug,
   initialViews,
+  trackView = true,
 }: {
   slug: string;
   initialViews?: number;
+  trackView?: boolean;
 }) {
   const [views, setViews] = useState<number | null>(initialViews ?? null);
 
   useEffect(() => {
-    fetch(`/api/views/${slug}`, { method: "POST" })
+    const method = trackView ? "POST" : "GET";
+    fetch(`/api/views/${slug}`, { method })
       .then((res) => res.json())
       .then((data) => {
         if (typeof data.count === "number") {
@@ -22,13 +25,14 @@ export function ViewCounter({
       .catch((err) => {
         console.error("ViewCounter fetch error:", err);
       });
-  }, [slug]);
+  }, [slug, trackView]);
 
-  const displayCount = views ?? initialViews ?? 0;
+  const count = views ?? initialViews ?? 0;
+  const label = count === 1 ? "1 view" : `${count} views`;
 
   return (
     <span className="font-ui text-[11px] uppercase tracking-wider text-muted">
-      👁️ {displayCount} okunma
+      {label}
     </span>
   );
 }
