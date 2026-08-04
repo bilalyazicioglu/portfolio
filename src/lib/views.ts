@@ -15,7 +15,6 @@ function getFilePath(): string {
     fs.unlinkSync(testFile);
     return path.join(primaryDir, "views.json");
   } catch {
-    // Fallback to /tmp which is always writable by non-root nodejs user in container
     return "/tmp/views.json";
   }
 }
@@ -44,15 +43,17 @@ function ensureFile(filePath: string): ViewsData {
   }
 }
 
-function saveFile(filePath: string, data: ViewsData) {
+function saveFileAtomic(filePath: string, data: ViewsData) {
   try {
     const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    const tmpPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf8");
+    fs.renameSync(tmpPath, filePath);
   } catch (err) {
-    console.error("Failed to save views file:", err);
+    console.error("Failed to save views file atomically:", err);
   }
 }
 
@@ -60,6 +61,16 @@ export function getViewCount(slug: string): number {
   const filePath = getFilePath();
   const data = ensureFile(filePath);
   return data[slug]?.count ?? 0;
+}
+
+export function getAllViewCounts(): { [slug: string]: number } {
+  const filePath = getFilePath();
+  const data = ensureFile(filePath);
+  const result: { [slug: string]: number } = {};
+  for (const slug of Object.keys(data)) {
+    result[slug] = data[slug]?.count ?? 0;
+  }
+  return result;
 }
 
 export function recordView(slug: string, ip: string): number {
@@ -76,7 +87,7 @@ export function recordView(slug: string, ip: string): number {
   if (!lastVisit || now - lastVisit > TWENTY_FOUR_HOURS) {
     data[slug].count = (data[slug].count ?? 0) + 1;
     data[slug].ips[ip] = now;
-    saveFile(filePath, data);
+    saveFileAtomic(filePath, data);
   }
 
   return data[slug].count;
