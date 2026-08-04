@@ -51,12 +51,14 @@ scrape_configs:
             - labels:
                 method:
                 path:
+                remote_addr:
             - labelallow:
                 - container
                 - job
                 - stream
                 - method
                 - path
+                - remote_addr
                 - geoip_country_name
                 - geoip_city_name
                 - geoip_continent_code
