@@ -16,7 +16,7 @@ scrape_configs:
     relabel_configs:
       # SADECE blog konteynerinin loglarını al (Diğer eski konteynerleri yoksay)
       - source_labels: ['__meta_docker_container_name']
-        regex: '/?portfolio-blog.*'
+        regex: '/?.*blog.*'
         action: keep
       - source_labels: ['__meta_docker_container_name']
         regex: '/(.*)'
@@ -40,7 +40,7 @@ scrape_configs:
       - drop:
           older_than: 168h
       - match:
-          selector: '{container=~"portfolio-blog.*"} |= "[access]"'
+          selector: '{container=~".*blog.*"} |= "[access]"'
           stages:
             - regex:
                 expression: '^\[access\] ip=(?P<remote_addr>\S+) method=(?P<method>\S+) path=(?P<path>\S+).*'
