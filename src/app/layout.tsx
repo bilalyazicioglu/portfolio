@@ -26,11 +26,64 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: `${siteConfig.name} — ${siteConfig.role}`,
     template: `%s — ${siteConfig.name}`,
   },
   description: siteConfig.tagline,
+  keywords: [
+    siteConfig.name,
+    ...siteConfig.alternateNames,
+    "Computer Engineering",
+    "Business Administration",
+    "Marmara University",
+    "Universidad de Oviedo",
+    "Portfolio",
+    "Blog",
+  ],
+  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+  creator: siteConfig.name,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: `${siteConfig.name} — ${siteConfig.role}`,
+    description: siteConfig.bio,
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.tagline,
+  },
+};
+
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: siteConfig.name,
+  alternateName: siteConfig.alternateNames,
+  url: siteConfig.url,
+  image: siteConfig.avatarUrl,
+  jobTitle: siteConfig.role,
+  worksFor: {
+    "@type": "Organization",
+    name: siteConfig.name,
+  },
+  alumniOf: [
+    {
+      "@type": "EducationalOrganization",
+      name: "Marmara University",
+    },
+    {
+      "@type": "EducationalOrganization",
+      name: "Universidad de Oviedo",
+    },
+  ],
+  sameAs: siteConfig.socials
+    .map((s) => s.href)
+    .filter((h) => h.startsWith("http")),
 };
 
 export default function RootLayout({
@@ -43,6 +96,12 @@ export default function RootLayout({
       lang="en"
       className={`${silkscreen.variable} ${jetbrainsMono.variable} ${inter.variable} h-full`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+      </head>
       <body className="bg-grid min-h-full flex flex-col bg-canvas text-ink antialiased">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-3 py-6 sm:px-6 sm:py-10">
           <PanelFrame>

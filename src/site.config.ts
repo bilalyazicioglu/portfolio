@@ -7,6 +7,8 @@ export type SiteConfig = {
   name: string;
   /** Short display name used for the big hero headline on the homepage. */
   heroName: string;
+  alternateNames: string[];
+  url: string;
   role: string;
   tagline: string;
   bio: string;
@@ -26,6 +28,13 @@ export type SiteConfig = {
 export const siteConfig: SiteConfig = {
   name: "Ahmet Bilal Yazıcıoğlu",
   heroName: "Bilal Yazicioglu",
+  alternateNames: [
+    "Bilal Yazıcıoğlu",
+    "Bilal Yazicioglu",
+    "Ahmet Bilal Yazicioglu",
+    "A. Bilal Yazıcıoğlu",
+  ],
+  url: "https://bilalyazicioglu.com.tr",
   role: "Computer Engineering & Business Administration Student",
   tagline: "Code, hoops, nature, and exploring new places.",
   bio: "I'm a Computer Engineering and Business Administration student at Marmara University (enrolled in 2024), including a memorable Erasmus semester at Universidad de Oviedo in Spain. Beyond tech and classes, I feel most at ease on the basketball court, traveling to new places, hanging out with friends, or recharging on long hikes in nature.",
