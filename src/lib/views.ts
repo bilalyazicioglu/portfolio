@@ -1,50 +1,70 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const VIEWS_FILE = path.join(DATA_DIR, "views.json");
+function getFilePath(): string {
+  if (process.env.VIEWS_FILE_PATH) {
+    return process.env.VIEWS_FILE_PATH;
+  }
+  const primaryDir = path.join(process.cwd(), "data");
+  try {
+    if (!fs.existsSync(primaryDir)) {
+      fs.mkdirSync(primaryDir, { recursive: true });
+    }
+    const testFile = path.join(primaryDir, ".writable_test");
+    fs.writeFileSync(testFile, "1");
+    fs.unlinkSync(testFile);
+    return path.join(primaryDir, "views.json");
+  } catch {
+    // Fallback to /tmp which is always writable by non-root nodejs user in container
+    return "/tmp/views.json";
+  }
+}
 
 type ViewsData = {
   [slug: string]: {
     count: number;
-    ips: { [ip: string]: number }; // ip -> timestamp
+    ips: { [ip: string]: number };
   };
 };
 
-function ensureFile(): ViewsData {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(VIEWS_FILE)) {
-    fs.writeFileSync(VIEWS_FILE, JSON.stringify({}), "utf8");
-    return {};
-  }
+function ensureFile(filePath: string): ViewsData {
   try {
-    const raw = fs.readFileSync(VIEWS_FILE, "utf8");
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify({}), "utf8");
+      return {};
+    }
+    const raw = fs.readFileSync(filePath, "utf8");
     return JSON.parse(raw);
   } catch {
     return {};
   }
 }
 
-function saveFile(data: ViewsData) {
+function saveFile(filePath: string, data: ViewsData) {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(VIEWS_FILE, JSON.stringify(data, null, 2), "utf8");
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
   } catch (err) {
-    console.error("Failed to save views.json:", err);
+    console.error("Failed to save views file:", err);
   }
 }
 
 export function getViewCount(slug: string): number {
-  const data = ensureFile();
+  const filePath = getFilePath();
+  const data = ensureFile(filePath);
   return data[slug]?.count ?? 0;
 }
 
 export function recordView(slug: string, ip: string): number {
-  const data = ensureFile();
+  const filePath = getFilePath();
+  const data = ensureFile(filePath);
   if (!data[slug]) {
     data[slug] = { count: 0, ips: {} };
   }
@@ -53,11 +73,10 @@ export function recordView(slug: string, ip: string): number {
   const lastVisit = data[slug].ips[ip] ?? 0;
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-  // Count as new view if IP hasn't visited this slug in last 24 hours
   if (!lastVisit || now - lastVisit > TWENTY_FOUR_HOURS) {
     data[slug].count = (data[slug].count ?? 0) + 1;
     data[slug].ips[ip] = now;
-    saveFile(data);
+    saveFile(filePath, data);
   }
 
   return data[slug].count;

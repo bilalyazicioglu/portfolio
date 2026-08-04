@@ -8,6 +8,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+    volumes:
+      - views-data:/app/data
     restart: unless-stopped
     networks:
       - monitoring
@@ -87,3 +89,4 @@ volumes:
   prometheus-data:
   grafana-data:
   loki-data:
+  views-data:
