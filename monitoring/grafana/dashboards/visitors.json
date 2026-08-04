@@ -254,6 +254,47 @@
       ],
       "title": "Live Visitor Logs (Full IP & Request)",
       "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 44 },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": true,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value #A" }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(20, count by (path) (count by (remote_addr, path) (count_over_time({container=~\".*blog.*\", path=~\".*/blog/.+\"} |= \"[access]\" | regexp \"\\\\[access\\\\] ip=(?P<remote_addr>\\\\S+)\" [$__range]))))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Blog Read Counts (Unique Visitor IPs)",
+      "type": "table"
     }
   ],
   "refresh": "30s",
