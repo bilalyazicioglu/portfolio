@@ -223,13 +223,37 @@
         {
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "topk(20, sum by (remote_addr, geoip_country_name, geoip_city_name) (count_over_time({container=~\".*blog.*\"} |= \"[access]\" [$__range])))",
+          "expr": "topk(20, sum by (remote_addr, geoip_country_name, geoip_city_name) (count_over_time({container=~\".*blog.*\"} |= \"[access]\" | regexp \"\\\\[access\\\\] ip=(?P<remote_addr>\\\\S+)\" [$__range])))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
       "title": "Visitor IP List (IP & Location)",
       "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 34 },
+      "id": 6,
+      "options": {
+        "showLabels": true,
+        "showCommonLabels": false,
+        "showLogLabels": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "{container=~\".*blog.*\"} |= \"[access]\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Live Visitor Logs (Full IP & Request)",
+      "type": "logs"
     }
   ],
   "refresh": "30s",
