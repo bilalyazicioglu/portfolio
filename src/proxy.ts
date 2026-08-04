@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for") ?? "";
   const ip =
+    request.headers.get("cf-connecting-ip") ||
     forwardedFor.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
     "-";
