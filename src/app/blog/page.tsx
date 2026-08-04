@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { CtaBand } from "@/components/CtaBand";
 import { getAllPosts } from "@/lib/blog";
+import { getViewCount } from "@/lib/views";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -49,6 +50,10 @@ export default function BlogPage() {
                   <span className="text-ink/20">/</span>
                   <span className="font-ui text-[11px] uppercase tracking-wider text-muted">
                     {post.readingTime}
+                  </span>
+                  <span className="text-ink/20">/</span>
+                  <span className="font-ui text-[11px] uppercase tracking-wider text-muted">
+                    👁️ {getViewCount(post.slug)} okunma
                   </span>
                 </div>
                 <h2 className="font-ui text-lg font-bold group-hover:text-accent">

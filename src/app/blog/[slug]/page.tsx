@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllSlugs, getPostBySlug } from "@/lib/blog";
+import { getViewCount } from "@/lib/views";
 import { CtaBand } from "@/components/CtaBand";
 import { ViewCounter } from "@/components/ViewCounter";
 
@@ -46,6 +47,8 @@ export default async function BlogPostPage({
     notFound();
   }
 
+  const initialViews = getViewCount(slug);
+
   return (
     <>
       <div className="border-b-[1.5px] border-ink px-4 py-8 sm:px-6 sm:py-10">
@@ -64,7 +67,7 @@ export default async function BlogPostPage({
             {post.readingTime}
           </span>
           <span className="text-ink/20">/</span>
-          <ViewCounter slug={slug} />
+          <ViewCounter slug={slug} initialViews={initialViews} />
         </div>
         <h1 className="font-display text-3xl leading-[1.2] sm:text-5xl">
           {post.title}

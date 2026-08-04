@@ -2,30 +2,33 @@
 
 import { useEffect, useState } from "react";
 
-export function ViewCounter({ slug }: { slug: string }) {
-  const [views, setViews] = useState<number | null>(null);
+export function ViewCounter({
+  slug,
+  initialViews,
+}: {
+  slug: string;
+  initialViews?: number;
+}) {
+  const [views, setViews] = useState<number | null>(initialViews ?? null);
 
   useEffect(() => {
-    // Record view and fetch updated count
     fetch(`/api/views/${slug}`, { method: "POST" })
       .then((res) => res.json())
-      .then((data) => setViews(data.count))
-      .catch(() => {
-        // Fallback to GET if POST fails
-        fetch(`/api/views/${slug}`)
-          .then((res) => res.json())
-          .then((data) => setViews(data.count))
-          .catch(() => setViews(null));
+      .then((data) => {
+        if (typeof data.count === "number") {
+          setViews(data.count);
+        }
+      })
+      .catch((err) => {
+        console.error("ViewCounter fetch error:", err);
       });
   }, [slug]);
 
-  if (views === null) {
-    return <span className="font-ui text-[11px] uppercase tracking-wider text-muted">... okunma</span>;
-  }
+  const displayCount = views ?? initialViews ?? 0;
 
   return (
     <span className="font-ui text-[11px] uppercase tracking-wider text-muted">
-      👁️ {views} okunma
+      👁️ {displayCount} okunma
     </span>
   );
 }
