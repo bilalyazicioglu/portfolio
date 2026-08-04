@@ -14,10 +14,14 @@ scrape_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 5s
     relabel_configs:
-      - source_labels: ["__meta_docker_container_name"]
-        regex: "/(.*)"
+      # SADECE blog konteynerinin loglarını al (Diğer eski konteynerleri yoksay)
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/?portfolio-blog.*'
+        action: keep
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
         target_label: container
-      - source_labels: ["__meta_docker_container_log_path"]
+      - source_labels: ['__meta_docker_container_log_path']
         target_label: __path__
     pipeline_stages:
       - json:
@@ -25,12 +29,18 @@ scrape_configs:
             log: log
             stream: stream
             time: time
+      - timestamp:
+          source: time
+          format: RFC3339Nano
       - output:
           source: log
       - labels:
           stream:
+      # Eski zaman damgası hatalarını yutması için 7 günden eski logları çöpe at
+      - drop:
+          older_than: 168h
       - match:
-          selector: '{container=~"blog.*"} |= "[access]"'
+          selector: '{container=~"portfolio-blog.*"} |= "[access]"'
           stages:
             - regex:
                 expression: '^\[access\] ip=(?P<remote_addr>\S+) method=(?P<method>\S+) path=(?P<path>\S+).*'
