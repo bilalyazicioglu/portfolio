@@ -56,9 +56,33 @@ services:
     networks:
       - monitoring
 
+  loki:
+    image: grafana/loki:latest
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - loki-data:/loki
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail:latest
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+      - ./monitoring/geolite2:/data/geolite2:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - monitoring
+
 networks:
   monitoring:
 
 volumes:
   prometheus-data:
   grafana-data:
+  loki-data:
