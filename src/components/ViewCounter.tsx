@@ -15,7 +15,13 @@ export function ViewCounter({
 
   useEffect(() => {
     const method = trackView ? "POST" : "GET";
-    fetch(`/api/views/${slug}`, { method })
+    fetch(`/api/views/${slug}`, {
+      method,
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (typeof data.count === "number") {
