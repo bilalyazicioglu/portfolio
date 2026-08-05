@@ -100,6 +100,9 @@ export default function RootLayout({
       className={`${silkscreen.variable} ${jetbrainsMono.variable} ${inter.variable} h-full`}
     >
       <head>
+        <link rel="icon" href="/icon.png" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
