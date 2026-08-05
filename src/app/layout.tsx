@@ -33,9 +33,12 @@ export const metadata: Metadata = {
   },
   description: siteConfig.bio,
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/icon.png?v=3", type: "image/png" },
+      { url: "/favicon.ico?v=3", sizes: "any" },
+    ],
+    shortcut: "/icon.png?v=3",
+    apple: "/apple-touch-icon.png?v=3",
   },
   keywords: [
     siteConfig.name,
@@ -100,9 +103,9 @@ export default function RootLayout({
       className={`${silkscreen.variable} ${jetbrainsMono.variable} ${inter.variable} h-full`}
     >
       <head>
-        <link rel="icon" href="/icon.png" type="image/png" sizes="any" />
-        <link rel="shortcut icon" href="/icon.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/icon.png?v=3" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/icon.png?v=3" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
