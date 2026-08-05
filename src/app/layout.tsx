@@ -31,7 +31,12 @@ export const metadata: Metadata = {
     default: `${siteConfig.name} — ${siteConfig.role}`,
     template: `%s — ${siteConfig.name}`,
   },
-  description: siteConfig.tagline,
+  description: siteConfig.bio,
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-touch-icon.png",
+  },
   keywords: [
     siteConfig.name,
     ...siteConfig.alternateNames,
@@ -55,7 +60,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
-    description: siteConfig.tagline,
+    description: siteConfig.bio,
   },
 };
 
@@ -65,8 +70,13 @@ const personJsonLd = {
   name: siteConfig.name,
   alternateName: siteConfig.alternateNames,
   url: siteConfig.url,
-  image: siteConfig.avatarUrl,
+  image: `${siteConfig.url}/icon.png`,
   jobTitle: siteConfig.role,
+  description: siteConfig.bio,
+  sameAs: [
+    "https://github.com/bilalyazicioglu",
+    "https://www.linkedin.com/in/bilal-yazicioglu/",
+  ],
   alumniOf: [
     {
       "@type": "EducationalOrganization",
@@ -77,9 +87,6 @@ const personJsonLd = {
       name: "Universidad de Oviedo",
     },
   ],
-  sameAs: siteConfig.socials
-    .map((s) => s.href)
-    .filter((h) => h.startsWith("http")),
 };
 
 export default function RootLayout({
