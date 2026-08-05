@@ -46,7 +46,7 @@ export const siteConfig: SiteConfig = {
   resumeUrl: "/resume.pdf",
   socials: [
     { label: "GitHub", href: "https://github.com/bilalyazicioglu" },
-    { label: "LinkedIn", href: "https://linkedin.com/in/bilal-yazicioglu" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/bilal-yazicioglu/" },
     { label: "Email", href: "mailto:ahmetbilalyazicioglu@gmail.com" },
   ],
 };
