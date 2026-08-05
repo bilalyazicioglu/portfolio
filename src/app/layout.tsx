@@ -34,11 +34,15 @@ export const metadata: Metadata = {
   description: siteConfig.bio,
   icons: {
     icon: [
-      { url: "/icon.png?v=3", type: "image/png" },
-      { url: "/favicon.ico?v=3", sizes: "any" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    shortcut: "/icon.png?v=3",
-    apple: "/apple-touch-icon.png?v=3",
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   keywords: [
     siteConfig.name,
@@ -59,11 +63,20 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} — ${siteConfig.role}`,
     description: siteConfig.bio,
     siteName: siteConfig.name,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.name} — ${siteConfig.role}`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.name,
+    title: `${siteConfig.name} — ${siteConfig.role}`,
     description: siteConfig.bio,
+    images: ["/og-image.png"],
   },
 };
 
@@ -73,7 +86,7 @@ const personJsonLd = {
   name: siteConfig.name,
   alternateName: siteConfig.alternateNames,
   url: siteConfig.url,
-  image: `${siteConfig.url}/icon.png`,
+  image: `${siteConfig.url}/icon-512.png`,
   jobTitle: siteConfig.role,
   description: siteConfig.bio,
   sameAs: [
@@ -92,6 +105,14 @@ const personJsonLd = {
   ],
 };
 
+const webSiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteConfig.name,
+  url: siteConfig.url,
+  image: `${siteConfig.url}/og-image.png`,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -103,12 +124,17 @@ export default function RootLayout({
       className={`${silkscreen.variable} ${jetbrainsMono.variable} ${inter.variable} h-full`}
     >
       <head>
-        <link rel="icon" href="/icon.png?v=3" type="image/png" sizes="any" />
-        <link rel="shortcut icon" href="/icon.png?v=3" type="image/png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon-48.png" type="image/png" sizes="48x48" />
+        <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+        <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([personJsonLd, webSiteJsonLd]),
+          }}
         />
       </head>
       <body className="bg-grid min-h-full flex flex-col bg-canvas text-ink antialiased">
