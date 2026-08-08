@@ -19,7 +19,13 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const post = getPostBySlug(slug);
-    return { title: post.title, description: post.summary };
+    return {
+      title: post.title,
+      description: post.summary,
+      alternates: {
+        canonical: `/blog/${slug}`,
+      },
+    };
   } catch {
     return {};
   }

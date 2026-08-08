@@ -10,6 +10,9 @@ import { education, experience, leadership, skills } from "@/lib/resume";
 export const metadata: Metadata = {
   title: "About",
   description: `About ${siteConfig.name}, ${siteConfig.role}.`,
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 const facts = [
