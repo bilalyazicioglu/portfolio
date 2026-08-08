@@ -9,6 +9,9 @@ import { ViewCounter } from "@/components/ViewCounter";
 export const metadata: Metadata = {
   title: "Blog",
   description: "Notes on engineering, design, and process.",
+  alternates: {
+    canonical: "/blog",
+  },
 };
 
 function formatDate(date: string) {

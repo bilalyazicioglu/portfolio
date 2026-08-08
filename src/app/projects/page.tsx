@@ -7,6 +7,9 @@ import { projects } from "@/lib/projects";
 export const metadata: Metadata = {
   title: "Projects",
   description: "A selection of products, open source, and experiments.",
+  alternates: {
+    canonical: "/projects",
+  },
 };
 
 export default function ProjectsPage() {
