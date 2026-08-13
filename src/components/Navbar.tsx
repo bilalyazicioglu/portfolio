@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/site.config";
@@ -15,16 +16,18 @@ export function Navbar() {
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b-[1.5px] border-ink px-4 py-4 sm:px-6">
-      <Link href="/" className="flex items-center gap-2.5">
-        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-ink font-display text-[11px] text-surface">
-          {siteConfig.name
-            .split(" ")
-            .map((part) => part[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase()}
-        </span>
-        <span className="font-ui text-sm font-bold uppercase tracking-wider">
+      <Link href="/" className="group flex items-center gap-2.5">
+        <div className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-ink/20 bg-ink">
+          <Image
+            src="/icon.png"
+            alt={siteConfig.name}
+            width={28}
+            height={28}
+            priority
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <span className="font-ui text-sm font-bold uppercase tracking-wider group-hover:text-accent transition-colors">
           {siteConfig.name}
         </span>
       </Link>
