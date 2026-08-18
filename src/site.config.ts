@@ -42,7 +42,7 @@ export const siteConfig: SiteConfig = {
   email: "ahmetbilalyazicioglu@gmail.com",
   availability: "Open to internships & collaborations",
   githubUsername: "bilalyazicioglu",
-  avatarUrl: "https://avatars.githubusercontent.com/u/186031308?v=4",
+  avatarUrl: "/icon.png",
   resumeUrl: "/resume.pdf",
   socials: [
     { label: "GitHub", href: "https://github.com/bilalyazicioglu" },
