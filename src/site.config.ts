@@ -17,6 +17,8 @@ export type SiteConfig = {
   availability: string;
   githubUsername: string;
   avatarUrl: string;
+  /** Hero portrait on the home page — local copy of the GitHub profile picture. */
+  heroAvatarUrl: string;
   resumeUrl: string;
   socials: SocialLink[];
 };
@@ -43,6 +45,7 @@ export const siteConfig: SiteConfig = {
   availability: "Open to internships & collaborations",
   githubUsername: "bilalyazicioglu",
   avatarUrl: "/icon.png",
+  heroAvatarUrl: "/github-avatar.png",
   resumeUrl: "/resume.pdf",
   socials: [
     { label: "GitHub", href: "https://github.com/bilalyazicioglu" },

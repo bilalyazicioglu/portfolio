@@ -60,7 +60,7 @@ export default function Home() {
 
         <div className="relative mx-auto flex h-40 w-40 shrink-0 items-center justify-center rounded-2xl border-[1.5px] border-ink bg-canvas/50 p-2 sm:h-48 sm:w-48">
           <Image
-            src={siteConfig.avatarUrl}
+            src={siteConfig.heroAvatarUrl}
             alt={siteConfig.name}
             width={192}
             height={192}
