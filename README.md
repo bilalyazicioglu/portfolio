@@ -16,7 +16,86 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 
 - `src/site.config.ts` — name, role, bio, socials, contact info.
 - `src/lib/projects.ts` — portfolio project data.
-- `src/content/blog/*.mdx` — blog posts (frontmatter: `title`, `summary`, `date`, `tags`).
+- `src/content/blog/*.mdx` — blog posts (frontmatter: `title`, `summary`, `date`,
+  `tags`, optional `draft: true`).
+
+Posts with `draft: true` are hidden from `/blog`, from the sitemap, and return
+404 on their public URL. They are only visible through the admin preview.
+
+## Writing posts (`/admin`)
+
+`/admin` is a browser editor for creating, editing, previewing, and deleting
+posts. It is reachable **only over the tailnet** — see below.
+
+Locally it is simply available at http://localhost:3000/admin (the gate is
+disabled outside production).
+
+### How the access gate works
+
+The real boundary is the network, not application code:
+
+- The container port is bound to `127.0.0.1` (`docker-compose.yml`), so the app
+  is only reachable through two doors: the public reverse proxy (nginx, behind
+  Cloudflare) and `tailscale serve`.
+- `src/proxy.ts` returns **404** for `/admin` and `/api/admin` on anything that
+  came through the public door — identified by the `cf-connecting-ip` header
+  Cloudflare always sets, and by the `Host` not matching the tailnet hostname.
+- There is no login form, no password, and no session token to steal.
+
+`/admin` is deliberately **not** listed in `robots.txt` — that would advertise a
+path that is otherwise invisible.
+
+### One-time VPS setup
+
+1. Serve the app on the tailnet:
+
+   ```bash
+   tailscale serve --bg 3000
+   tailscale serve status   # prints your https://<host>.tailXXXX.ts.net URL
+   ```
+
+2. Put the tailnet hostname in a `.env` file next to `docker-compose.yml`
+   (gitignored):
+
+   ```bash
+   ADMIN_TAILNET_HOST=vps.tailXXXX.ts.net
+   ADMIN_TAILSCALE_LOGIN=you@example.com   # optional second check
+   ```
+
+   **`ADMIN_TAILNET_HOST` is required in production.** If it is unset the gate
+   fails closed: every admin request gets a 404 and a `[admin-gate]` line is
+   logged.
+
+3. In the public nginx `server` block, drop any identity header a client tries
+   to smuggle in:
+
+   ```nginx
+   proxy_set_header Tailscale-User-Login "";
+   ```
+
+4. Confirm the origin port is not publicly reachable — from another network:
+
+   ```bash
+   curl --connect-timeout 5 http://<vps-ip>:3000   # must fail
+   ```
+
+### Where posts are stored in production
+
+The production image does not contain `src/content/blog`. Posts live on the
+`content-data` Docker volume at `/app/content/blog` (`BLOG_DIR_PATH`), which is
+what makes runtime writing possible. On first boot `docker-entrypoint.sh` seeds
+the volume from the git-tracked posts baked into the image.
+
+This means **the volume is the source of truth in production**. Posts written
+from `/admin` exist only on the VPS until you pull them back into git:
+
+```bash
+./scripts/sync-content.sh <ssh-host-or-tailnet-name>
+git add src/content/blog && git commit
+```
+
+Publishing calls `revalidatePath`, so a new post appears on the public site
+within seconds — no rebuild needed.
 
 ## Build
 

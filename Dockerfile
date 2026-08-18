@@ -22,12 +22,22 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+# Git-tracked posts ship as a seed; the entrypoint copies them onto the
+# content volume on first boot. BLOG_DIR_PATH then points the app at the volume.
+COPY --from=builder --chown=nextjs:nodejs /app/src/content/blog ./content-seed
+
+COPY --chown=nextjs:nodejs docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+RUN mkdir -p /app/data /app/content/blog \
+  && chown -R nextjs:nodejs /app/data /app/content
 
 USER nextjs
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV BLOG_DIR_PATH=/app/content/blog
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

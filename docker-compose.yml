@@ -4,12 +4,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # Bound to loopback on purpose: the only ways in are the public reverse
+    # proxy (nginx :443, behind Cloudflare) and `tailscale serve`. Exposing this
+    # on 0.0.0.0 would let anyone with the VPS IP bypass both and reach /admin.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - NODE_ENV=production
+      - BLOG_DIR_PATH=/app/content/blog
+      # Admin gate — see src/lib/admin-gate.ts. Fails closed if the request did
+      # not arrive over the tailnet.
+      - ADMIN_TAILNET_HOST=${ADMIN_TAILNET_HOST:-}
+      - ADMIN_TAILSCALE_LOGIN=${ADMIN_TAILSCALE_LOGIN:-}
     volumes:
       - views-data:/app/data
+      - content-data:/app/content
     restart: unless-stopped
     networks:
       - monitoring
@@ -90,3 +99,4 @@ volumes:
   grafana-data:
   loki-data:
   views-data:
+  content-data:
