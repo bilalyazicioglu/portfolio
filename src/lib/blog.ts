@@ -2,8 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
+import { isValidSlug } from "./slug";
 
-const BLOG_DIR = path.join(process.cwd(), "src/content/blog");
+export { isValidSlug, slugify } from "./slug";
+
+export function getBlogDir(): string {
+  if (process.env.BLOG_DIR_PATH) {
+    return process.env.BLOG_DIR_PATH;
+  }
+  return path.join(process.cwd(), "src/content/blog");
+}
 
 export type PostMeta = {
   slug: string;
@@ -11,6 +19,7 @@ export type PostMeta = {
   summary: string;
   date: string;
   tags: string[];
+  draft: boolean;
   readingTime: string;
 };
 
@@ -18,46 +27,97 @@ export type Post = PostMeta & {
   content: string;
 };
 
-function readSlugs(): string[] {
-  return fs
-    .readdirSync(BLOG_DIR)
-    .filter((file) => file.endsWith(".mdx"))
-    .map((file) => file.replace(/\.mdx$/, ""));
+export type PostInput = {
+  slug: string;
+  title: string;
+  summary: string;
+  date: string;
+  tags: string[];
+  draft: boolean;
+  content: string;
+};
+
+function postPath(slug: string): string {
+  if (!isValidSlug(slug)) {
+    throw new Error(`Invalid slug: ${slug}`);
+  }
+  return path.join(getBlogDir(), `${slug}.mdx`);
 }
 
-export function getAllPosts(): PostMeta[] {
+function readSlugs(): string[] {
+  const dir = getBlogDir();
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+  return fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".mdx"))
+    .map((file) => file.replace(/\.mdx$/, ""))
+    .filter(isValidSlug);
+}
+
+function toMeta(slug: string, data: matter.GrayMatterFile<string>["data"], content: string): PostMeta {
+  return {
+    slug,
+    title: (data.title as string) ?? slug,
+    summary: (data.summary as string) ?? "",
+    date: (data.date as string) ?? "",
+    tags: (data.tags as string[]) ?? [],
+    draft: data.draft === true,
+    readingTime: readingTime(content).text,
+  };
+}
+
+/** Published posts, newest first. Pass `true` to include drafts (admin only). */
+export function getAllPosts(includeDrafts = false): PostMeta[] {
   return readSlugs()
     .map((slug) => getPostMeta(slug))
+    .filter((post) => includeDrafts || !post.draft)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 export function getPostMeta(slug: string): PostMeta {
-  const raw = fs.readFileSync(path.join(BLOG_DIR, `${slug}.mdx`), "utf8");
+  const raw = fs.readFileSync(postPath(slug), "utf8");
   const { data, content } = matter(raw);
-  return {
-    slug,
-    title: data.title as string,
-    summary: data.summary as string,
-    date: data.date as string,
-    tags: (data.tags as string[]) ?? [],
-    readingTime: readingTime(content).text,
-  };
+  return toMeta(slug, data, content);
 }
 
 export function getPostBySlug(slug: string): Post {
-  const raw = fs.readFileSync(path.join(BLOG_DIR, `${slug}.mdx`), "utf8");
+  const raw = fs.readFileSync(postPath(slug), "utf8");
   const { data, content } = matter(raw);
-  return {
-    slug,
-    title: data.title as string,
-    summary: data.summary as string,
-    date: data.date as string,
-    tags: (data.tags as string[]) ?? [],
-    readingTime: readingTime(content).text,
-    content,
-  };
+  return { ...toMeta(slug, data, content), content };
 }
 
+/** Slugs for `generateStaticParams` — drafts are never prerendered. */
 export function getAllSlugs(): string[] {
-  return readSlugs();
+  return getAllPosts().map((post) => post.slug);
+}
+
+export function postExists(slug: string): boolean {
+  return isValidSlug(slug) && fs.existsSync(postPath(slug));
+}
+
+/** Writes atomically via tmp + rename, mirroring `saveFileAtomic` in lib/views.ts. */
+export function writePost(input: PostInput): void {
+  const filePath = postPath(input.slug);
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const serialized = matter.stringify(`\n${input.content.trim()}\n`, {
+    title: input.title,
+    summary: input.summary,
+    date: input.date,
+    tags: input.tags,
+    ...(input.draft ? { draft: true } : {}),
+  });
+
+  const tmpPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+  fs.writeFileSync(tmpPath, serialized, "utf8");
+  fs.renameSync(tmpPath, filePath);
+}
+
+export function deletePost(slug: string): void {
+  fs.rmSync(postPath(slug), { force: true });
 }

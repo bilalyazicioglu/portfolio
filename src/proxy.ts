@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isAdminPath, isAdminRequestAllowed } from "@/lib/admin-gate";
 
 export function proxy(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for") ?? "";
@@ -13,6 +14,13 @@ export function proxy(request: NextRequest) {
   const ua = request.headers.get("user-agent") ?? "-";
 
   console.log(`[access] ip=${ip} method=${method} path=${path} ua=${ua}`);
+
+  // Admin surface exists only for requests arriving over the tailnet.
+  // For everyone else it must be indistinguishable from a route that does not exist.
+  if (isAdminPath(path) && !isAdminRequestAllowed(request.headers)) {
+    console.log(`[admin-denied] ip=${ip} path=${path} host=${request.headers.get("host") ?? "-"}`);
+    return new NextResponse(null, { status: 404 });
+  }
 
   return NextResponse.next();
 }

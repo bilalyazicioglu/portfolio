@@ -11,6 +11,10 @@ export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
+// Posts written from /admin land on disk after the build, so slugs missing from
+// generateStaticParams must still render on first request.
+export const dynamicParams = true;
+
 export async function generateMetadata({
   params,
 }: {
@@ -19,6 +23,7 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const post = getPostBySlug(slug);
+    if (post.draft) return {};
     return {
       title: post.title,
       description: post.summary,
@@ -50,6 +55,11 @@ export default async function BlogPostPage({
   try {
     post = getPostBySlug(slug);
   } catch {
+    notFound();
+  }
+
+  // Drafts are only reachable through the tailnet-gated /admin preview.
+  if (post.draft) {
     notFound();
   }
 
