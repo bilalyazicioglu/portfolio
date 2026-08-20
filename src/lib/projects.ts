@@ -20,26 +20,29 @@ export type Project = {
 };
 
 /**
- * m3nu is a private/confidential project — no public repository link.
- * The rest are the most notable of github.com/bilalyazicioglu's public repos
- * (smaller CLI/course exercises are left off the site).
+ * ARpoly (platform + m3nu vertical) is private/confidential — no public
+ * repository link. The rest are the most notable of
+ * github.com/bilalyazicioglu's public repos (smaller CLI/course exercises are
+ * left off the site).
+ *
+ * Order matters: the home page features the first three entries.
  */
 export const projects: Project[] = [
   {
-    slug: "m3nu",
-    name: "m3nu",
-    tag: "M3",
+    slug: "arpoly",
+    name: "ARpoly",
+    tag: "AR",
     category: "Private",
     badges: ["Private", "Featured"],
     description:
-      "A web-based augmented reality menu viewer. Restaurants scan a dish into a real 3D model (or upload a .glb); customers open the menu on a phone and view any dish at true real-world scale through the live camera — no app install required.",
+      "One product in two halves. The platform is a sector-agnostic AR service: someone films an object with an ordinary phone camera, the server reconstructs it into a real-scale 3D model (GLB + USDZ) and hands it to the OS AR viewer, so a 30 cm pizza shows up 30 cm wide on the customer's own table — no app install, and no camera permission to view. It is sold as a multi-tenant REST API plus @arpoly/react, the client SDK published on npm. The other half is m3nu, the cafe vertical running on top of it: menus, categories, QR links and table orders with split payment, talking to the platform over HTTP with an API key exactly as an outside customer would — which is the point, because anything m3nu needs that a third party could not have is a bug in the platform.",
     featured: true,
     private: true,
     stats: [
-      { label: "Stack", value: "React + Three.js" },
-      { label: "Backend", value: "Node / Express" },
-      { label: "Tests", value: "90+" },
-      { label: "Status", value: "Private" },
+      { label: "Platform", value: "Node + MongoDB" },
+      { label: "Vertical", value: "m3nu (cafes)" },
+      { label: "SDK", value: "@arpoly/react" },
+      { label: "Tests", value: "280+" },
     ],
   },
   {
@@ -57,6 +60,39 @@ export const projects: Project[] = [
       { label: "Stack", value: "Rust + React" },
       { label: "Stars", value: "6" },
       { label: "Status", value: "Live" },
+    ],
+  },
+  {
+    slug: "tincan",
+    name: "tincan",
+    tag: "TC",
+    category: "Open Source",
+    badges: ["CLI", "P2P"],
+    description:
+      "Serverless voice chat that lives in the terminal. Whoever starts it becomes the room's coordinator and hands out an invite code — friends join from anywhere with no VPN, no port forwarding and no account. Control traffic goes through the coordinator, but audio is a direct peer-to-peer mesh of QUIC datagrams, so the host's uplink never becomes the bottleneck.",
+    href: "https://github.com/bilalyazicioglu/tincan-cli",
+    stats: [
+      { label: "Language", value: "Rust" },
+      { label: "Transport", value: "iroh / QUIC" },
+      { label: "Audio", value: "Opus mesh" },
+      { label: "Tests", value: "93" },
+    ],
+  },
+  {
+    slug: "portfolio",
+    name: "portfolio",
+    tag: "PF",
+    category: "Open Source",
+    badges: ["Live", "This site"],
+    live: true,
+    description:
+      "This site. A Next.js App Router portfolio and MDX blog, with a browser editor for writing posts that is reachable only over my tailnet — no login form, because the boundary is the network rather than application code. Ships as a Docker image behind nginx and Cloudflare, with Prometheus, Loki and Grafana watching it.",
+    href: "https://github.com/bilalyazicioglu/portfolio",
+    stats: [
+      { label: "Stack", value: "Next.js 16 + TS" },
+      { label: "Content", value: "MDX" },
+      { label: "Ops", value: "Docker + Grafana" },
+      { label: "Admin", value: "Tailnet-only" },
     ],
   },
   {
