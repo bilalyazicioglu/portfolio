@@ -11,7 +11,10 @@
 
   --font-display: var(--font-silkscreen), monospace;
   --font-ui: var(--font-jetbrains), ui-monospace, monospace;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Helvetica where it exists (macOS/iOS), Arial next, Inter as the web
+     fallback for platforms that ship neither. */
+  --font-body: "Helvetica Neue", Helvetica, Arial, var(--font-inter),
+    ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -25,7 +28,7 @@ html {
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
-  font-family: var(--font-ui);
+  font-family: var(--font-body);
 }
 
 .bg-grid {
@@ -36,6 +39,26 @@ body {
     transparent 1px,
     transparent 120px
   );
+}
+
+/* Project card copy scrolls inside a fixed-height box, so one long description
+   cannot stretch a whole row of cards. 13rem ≈ nine lines at this size. The
+   scrollbar is kept visible on purpose: it is the only hint there is more. */
+.card-copy {
+  max-height: 13rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-ink) 25%, transparent) transparent;
+}
+
+.card-copy::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-copy::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-ink) 22%, transparent);
+  border-radius: 3px;
 }
 
 .text-balance {

@@ -112,9 +112,11 @@ export function ProjectCard({ project }: { project: Project }) {
         </span>
         <h3 className="font-ui text-sm font-bold">{project.name}</h3>
       </div>
-      <p className="mb-4 flex-1 text-sm leading-relaxed text-ink/70">
-        {project.description}
-      </p>
+      <div className="card-copy mb-4 flex-1 pr-2">
+        <p className="text-sm leading-relaxed text-ink/70">
+          {project.description}
+        </p>
+      </div>
       <div className="grid grid-cols-2 gap-3 border-t border-ink/10 pt-4">
         {project.stats.slice(0, 4).map((stat) => (
           <Stat key={stat.label} label={stat.label} value={stat.value} />
