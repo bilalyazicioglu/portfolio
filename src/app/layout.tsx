@@ -3,6 +3,7 @@ import { Silkscreen, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { TerminalProvider } from "@/components/terminal/TerminalProvider";
 import { PanelFrame } from "@/components/PanelFrame";
 import { siteConfig } from "@/site.config";
 
@@ -142,13 +143,15 @@ export default function RootLayout({
       </head>
       <body className="bg-grid min-h-full flex flex-col bg-canvas text-ink antialiased">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-3 py-6 sm:px-6 sm:py-10">
-          <PanelFrame>
-            <div className="flex flex-1 flex-col">
-              <Navbar />
-              <main className="flex flex-1 flex-col">{children}</main>
-              <Footer />
-            </div>
-          </PanelFrame>
+          <TerminalProvider>
+            <PanelFrame>
+              <div className="flex flex-1 flex-col">
+                <Navbar />
+                <main className="flex flex-1 flex-col">{children}</main>
+                <Footer />
+              </div>
+            </PanelFrame>
+          </TerminalProvider>
         </div>
       </body>
     </html>

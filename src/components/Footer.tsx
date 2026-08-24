@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { siteConfig } from "@/site.config";
 import { DecorativePlus } from "@/components/DecorativePlus";
-import { TerminalLauncher } from "@/components/terminal/TerminalLauncher";
+import { TerminalButton } from "@/components/terminal/TerminalButton";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -13,7 +13,7 @@ export function Footer() {
           © {year} {siteConfig.name}. Built with Next.js.
         </p>
         <nav className="flex flex-wrap items-center gap-5">
-          <TerminalLauncher />
+          <TerminalButton />
           {siteConfig.socials.map((social) => (
             <Link
               key={social.label}

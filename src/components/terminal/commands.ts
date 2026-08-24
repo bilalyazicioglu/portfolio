@@ -2,15 +2,14 @@
  * The terminal's command set.
  *
  * Every command is a pure function: it reads the context it is given and
- * returns lines plus, at most, an *intent* — navigate, clear, close, copy, draw
- * a banner, open the file picker. Nothing here touches the DOM, the router or
- * the clipboard; `Terminal.tsx` carries the intents out. That split is what
- * keeps the command set readable and lets it be exercised without a browser.
+ * returns lines plus, at most, an *intent* — navigate, clear, close, copy,
+ * convert an image, draw a banner. Nothing here touches the DOM, the router or
+ * the clipboard; `Terminal.tsx` carries the intents out. That split keeps the
+ * command set readable and lets it be exercised without a browser.
  */
 
 import type { Project } from "@/lib/projects";
 import { siteConfig } from "@/site.config";
-import { ASCII_STYLES, type AsciiStyle } from "./ascii";
 
 export type PostSummary = {
   slug: string;
@@ -32,8 +31,8 @@ export type CommandIntent =
   | { kind: "clear" }
   | { kind: "close" }
   | { kind: "copy" }
-  | { kind: "pick-image" }
-  | { kind: "banner"; text: string; style: AsciiStyle };
+  | { kind: "pick-image"; cols?: number; invert?: boolean }
+  | { kind: "banner"; text: string };
 
 export type CommandResult = {
   lines: OutputLine[];
@@ -69,22 +68,20 @@ function pad(value: string, width: number): string {
 
 const help: Command = {
   name: "help",
-  summary: "Bu listeyi göster",
+  summary: "Show this list",
   run: () => ({
     lines: [
-      line("Komutlar", "accent"),
-      ...commandList().map((cmd) =>
-        line(`  ${pad(cmd.usage ?? cmd.name, 26)}${cmd.summary}`)
-      ),
+      line("Available commands", "accent"),
+      ...REGISTRY.map((cmd) => line(`  ${pad(cmd.usage ?? cmd.name, 30)}${cmd.summary}`)),
       blank(),
-      line("↑/↓ geçmiş · Tab tamamlama · Esc kapat", "muted"),
+      line("Up/Down for history · Tab to complete · Esc to close", "muted"),
     ],
   }),
 };
 
 const ls: Command = {
   name: "ls",
-  summary: "Sayfaları, projeleri veya yazıları listele",
+  summary: "List pages, projects or posts",
   usage: "ls [projects|blog]",
   run: (args, ctx) => {
     const target = (args[0] ?? "").toLowerCase();
@@ -100,8 +97,8 @@ const ls: Command = {
     }
 
     if (target === "blog" || target === "posts") {
-      if (ctx.postsLoading) return { lines: [line("  yazılar yükleniyor…", "muted")] };
-      if (ctx.posts.length === 0) return { lines: [line("  yazı yok", "muted")] };
+      if (ctx.postsLoading) return { lines: [line("  loading posts…", "muted")] };
+      if (ctx.posts.length === 0) return { lines: [line("  no posts", "muted")] };
       return {
         lines: ctx.posts.map((post) =>
           line(`  ${pad(post.date.slice(0, 10), 12)}${post.slug}`)
@@ -110,14 +107,14 @@ const ls: Command = {
     }
 
     if (target) {
-      return { lines: [line(`ls: ${target}: böyle bir dizin yok`, "error")] };
+      return { lines: [line(`ls: ${target}: no such directory`, "error")] };
     }
 
     return {
       lines: [
         ...PAGES.map((page) => line(`  ${pad(page.name, 12)}${page.about}`)),
         blank(),
-        line("  'ls projects' ve 'ls blog' de var", "muted"),
+        line("  try 'ls projects' or 'ls blog'", "muted"),
       ],
     };
   },
@@ -125,18 +122,18 @@ const ls: Command = {
 
 const open: Command = {
   name: "open",
-  summary: "Bir sayfayı veya yazıyı aç",
-  usage: "open <sayfa|slug>",
+  summary: "Open a page, post or project",
+  usage: "open <page|slug>",
   run: (args, ctx) => {
     const target = (args[0] ?? "").toLowerCase().replace(/^\/+/, "");
     if (!target) {
-      return { lines: [line("open: ne açayım? 'ls' ile bak", "error")] };
+      return { lines: [line("open: open what? try 'ls'", "error")] };
     }
 
     const page = PAGES.find((candidate) => candidate.name === target);
     if (page) {
       return {
-        lines: [line(`${page.href} açılıyor…`, "muted")],
+        lines: [line(`opening ${page.href}…`, "muted")],
         intent: { kind: "navigate", href: page.href },
       };
     }
@@ -144,7 +141,7 @@ const open: Command = {
     const post = ctx.posts.find((candidate) => candidate.slug === target);
     if (post) {
       return {
-        lines: [line(`${post.title} açılıyor…`, "muted")],
+        lines: [line(`opening ${post.title}…`, "muted")],
         intent: { kind: "navigate", href: `/blog/${post.slug}` },
       };
     }
@@ -153,35 +150,35 @@ const open: Command = {
     if (project) {
       if (!project.href) {
         return {
-          lines: [line(`${project.name} özel bir proje — herkese açık repo yok`, "muted")],
+          lines: [line(`${project.name} is private — no public repository`, "muted")],
         };
       }
       return {
-        lines: [line(`${project.href} açılıyor…`, "muted")],
+        lines: [line(`opening ${project.href}…`, "muted")],
         intent: { kind: "navigate", href: project.href, external: true },
       };
     }
 
-    return { lines: [line(`open: ${target}: bulunamadı`, "error")] };
+    return { lines: [line(`open: ${target}: not found`, "error")] };
   },
 };
 
 const cat: Command = {
   name: "cat",
-  summary: "about / cv / contact içeriğini bas",
+  summary: "Print about, cv or contact",
   usage: "cat <about|cv|contact>",
   run: (args) => {
     const target = (args[0] ?? "").toLowerCase();
 
-    if (target === "about") {
-      return { lines: [line(siteConfig.bio)] };
-    }
+    if (target === "about") return { lines: [line(siteConfig.bio)] };
+
     if (target === "cv" || target === "resume") {
       return {
-        lines: [line(`${siteConfig.resumeUrl} indiriliyor…`, "muted")],
+        lines: [line(`fetching ${siteConfig.resumeUrl}…`, "muted")],
         intent: { kind: "navigate", href: siteConfig.resumeUrl, external: true },
       };
     }
+
     if (target === "contact") {
       return {
         lines: [
@@ -193,13 +190,13 @@ const cat: Command = {
       };
     }
 
-    return { lines: [line("cat: about, cv veya contact", "error")] };
+    return { lines: [line("cat: about, cv or contact", "error")] };
   },
 };
 
 const whoami: Command = {
   name: "whoami",
-  summary: "Tek satırda kim olduğum",
+  summary: "One line about me",
   run: () => ({
     lines: [
       line(`${siteConfig.name} — ${siteConfig.role}`),
@@ -208,7 +205,6 @@ const whoami: Command = {
   }),
 };
 
-/** The site's own mark, hand-traced small enough to sit next to the stats. */
 const LOGO = [
   "  ██████╗ ",
   "  ██╔══██╗",
@@ -220,17 +216,17 @@ const LOGO = [
 
 const neofetch: Command = {
   name: "neofetch",
-  summary: "Sitenin künyesi",
+  summary: "Site fact sheet",
   run: (_args, ctx) => {
     const facts = [
       `${siteConfig.name.toLowerCase().replace(/\s+/g, "")}@web`,
       "-".repeat(22),
       `role     ${siteConfig.role}`,
       `location ${siteConfig.location}`,
-      `stack    Next.js 16 · TypeScript · Tailwind 4`,
+      "stack    Next.js 16 · TypeScript · Tailwind 4",
       `projects ${ctx.projects.length}`,
       `posts    ${ctx.postsLoading ? "…" : ctx.posts.length}`,
-      `shell    ${siteConfig.url.replace(/^https?:\/\//, "")}/terminal`,
+      `host     ${siteConfig.url.replace(/^https?:\/\//, "")}`,
     ];
 
     const rows = Math.max(LOGO.length, facts.length);
@@ -244,75 +240,76 @@ const neofetch: Command = {
 
 const ascii: Command = {
   name: "ascii",
-  summary: "Metni banner'a çevir (veya bir görseli ASCII yap)",
-  usage: "ascii <metin> [--style block|outline|shadow]",
+  summary: "Turn an image into ASCII art",
+  usage: "ascii [--width 100] [--invert]",
   run: (args) => {
-    if (args[0] === "--image" || args[0] === "-i") {
-      return {
-        lines: [line("bir görsel seç — ya da pencereye sürükle", "muted")],
-        intent: { kind: "pick-image" },
-      };
-    }
+    let cols: number | undefined;
+    let invert = false;
 
-    let style: AsciiStyle = "block";
-    const words: string[] = [];
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      if (arg === "--style" || arg === "-s") {
-        const value = (args[i + 1] ?? "") as AsciiStyle;
-        if (!ASCII_STYLES.includes(value)) {
-          return {
-            lines: [line(`ascii: stiller: ${ASCII_STYLES.join(", ")}`, "error")],
-          };
+      if (arg === "--invert" || arg === "-i") {
+        invert = true;
+        continue;
+      }
+      if (arg === "--width" || arg === "-w") {
+        cols = Number(args[i + 1]);
+        if (!cols || Number.isNaN(cols)) {
+          return { lines: [line("ascii: --width wants a number, e.g. --width 120", "error")] };
         }
-        style = value;
         i++;
         continue;
       }
-      words.push(arg);
+      return { lines: [line(`ascii: unknown option ${arg}`, "error")] };
     }
 
-    const text = words.join(" ");
+    return {
+      lines: [line("pick an image — or drop one anywhere on this window", "muted")],
+      intent: { kind: "pick-image", cols, invert },
+    };
+  },
+};
+
+const banner: Command = {
+  name: "banner",
+  summary: "Draw text in the site's pixel face",
+  usage: "banner <text>",
+  run: (args) => {
+    const text = args.join(" ");
     if (!text) {
       return {
-        lines: [
-          line("ascii: bir metin ver", "error"),
-          line("  ascii merhaba", "muted"),
-          line("  ascii bilal --style shadow", "muted"),
-          line("  ascii --image", "muted"),
-        ],
+        lines: [line("banner: give me some text, e.g. banner hello", "error")],
       };
     }
-
-    return { lines: [], intent: { kind: "banner", text, style } };
+    return { lines: [], intent: { kind: "banner", text } };
   },
 };
 
 const copy: Command = {
   name: "copy",
-  summary: "Son çıktıyı panoya kopyala",
+  summary: "Copy the last output to the clipboard",
   run: () => ({ lines: [], intent: { kind: "copy" } }),
 };
 
 const clear: Command = {
   name: "clear",
-  summary: "Ekranı temizle",
+  summary: "Clear the screen",
   run: () => ({ lines: [], intent: { kind: "clear" } }),
 };
 
 const exit: Command = {
   name: "exit",
-  summary: "Terminali kapat",
+  summary: "Close the terminal",
   run: () => ({ lines: [], intent: { kind: "close" } }),
 };
 
 const sudo: Command = {
   name: "sudo",
-  summary: "Denemesi bedava",
+  summary: "Worth a try",
   run: (args) => ({
     lines: [
       line(
-        `sudo: ${args.join(" ") || "bir şey"}: bu olay senin tarayıcında geçiyor, burada kimse root değil`,
+        `sudo: ${args.join(" ") || "that"}: this whole thing runs in your browser — nobody is root here`,
         "muted"
       ),
     ],
@@ -327,15 +324,12 @@ const REGISTRY: Command[] = [
   whoami,
   neofetch,
   ascii,
+  banner,
   copy,
   clear,
   exit,
   sudo,
 ];
-
-function commandList(): Command[] {
-  return REGISTRY;
-}
 
 export const COMMAND_NAMES = REGISTRY.map((command) => command.name);
 
@@ -352,6 +346,7 @@ export function complete(input: string, ctx: CommandContext): string[] {
 
   if (name === "ls") candidates = ["projects", "blog"];
   if (name === "cat") candidates = ["about", "cv", "contact"];
+  if (name === "ascii") candidates = ["--width", "--invert"];
   if (name === "open") {
     candidates = [
       ...PAGES.map((page) => page.name),
@@ -359,7 +354,6 @@ export function complete(input: string, ctx: CommandContext): string[] {
       ...ctx.projects.map((project) => project.slug),
     ];
   }
-  if (name === "ascii") candidates = ["--image", "--style", ...ASCII_STYLES];
 
   return candidates
     .filter((candidate) => candidate.startsWith(prefix))
@@ -372,9 +366,7 @@ export function runCommand(input: string, ctx: CommandContext): CommandResult {
 
   const command = REGISTRY.find((candidate) => candidate.name === name.toLowerCase());
   if (!command) {
-    return {
-      lines: [line(`command not found: ${name} — 'help' dene`, "error")],
-    };
+    return { lines: [line(`command not found: ${name} — try 'help'`, "error")] };
   }
 
   return command.run(args, ctx);
@@ -382,8 +374,8 @@ export function runCommand(input: string, ctx: CommandContext): CommandResult {
 
 export function welcomeLines(): OutputLine[] {
   return [
-    line(`${siteConfig.name} — web terminal`, "accent"),
-    line("'help' yaz, ya da 'ascii merhaba' ile başla.", "muted"),
+    line("Last login: welcome to a terminal that lives in a web page.", "muted"),
+    line("Type 'help', or drop an image here to turn it into ASCII art.", "muted"),
     blank(),
   ];
 }
