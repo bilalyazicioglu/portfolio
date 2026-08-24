@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/site.config";
+import { TerminalButton } from "@/components/terminal/TerminalButton";
 
 const links = [
   { href: "/about", label: "About" },
@@ -50,12 +51,15 @@ export function Navbar() {
         })}
       </nav>
 
-      <Link
-        href={`mailto:${siteConfig.email}`}
-        className="inline-flex items-center rounded-full bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-wider text-accent-ink hover:bg-ink transition-colors"
-      >
-        Get in touch
-      </Link>
+      <div className="flex items-center gap-3">
+        <TerminalButton />
+        <Link
+          href={`mailto:${siteConfig.email}`}
+          className="inline-flex items-center rounded-full bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-wider text-accent-ink hover:bg-ink transition-colors"
+        >
+          Get in touch
+        </Link>
+      </div>
     </header>
   );
 }

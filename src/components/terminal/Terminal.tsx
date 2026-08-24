@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { projects } from "@/lib/projects";
-import { renderImage, renderTextBanner } from "./ascii";
+import { renderBanner, renderImage } from "./ascii";
 import {
   complete,
   runCommand,
@@ -15,18 +15,24 @@ import {
 
 const HISTORY_LIMIT = 50;
 
+/** macOS zsh shape, so the window reads as a shell at a glance. */
+const PROMPT = "bilal@web ~ %";
+
 /** Enough to get somewhere without typing, which is the whole story on a phone. */
-const CHIPS = ["help", "ls blog", "neofetch", "ascii merhaba", "ascii --image"];
+const SUGGESTIONS = ["help", "ls blog", "neofetch", "ascii", "banner hello"];
 
 const TONE_CLASS: Record<string, string> = {
-  default: "text-canvas",
-  muted: "text-canvas/50",
-  accent: "text-accent",
-  // The palette has no error colour — this one exists only inside the terminal,
-  // where a warm red is the convention and neither ink nor accent would read.
+  default: "text-[#f2f2f2]",
+  muted: "text-[#f2f2f2]/45",
+  accent: "text-[#4fd6be]",
   error: "text-[#ff8f6b]",
 };
 
+/**
+ * A terminal window, borrowed wholesale from macOS Terminal: traffic lights on
+ * the left of a light title bar, the window title in the middle, SF Mono on
+ * black underneath, and a zsh-shaped `%` prompt.
+ */
 export function Terminal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [lines, setLines] = useState<OutputLine[]>(() => welcomeLines());
@@ -41,6 +47,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
+  /** Options the pending file picker was opened with (`ascii --width 120`). */
+  const pickOptions = useRef<{ cols?: number; invert?: boolean }>({});
   /** The last command's output, which is what `copy` puts on the clipboard. */
   const lastOutput = useRef<string[]>([]);
 
@@ -87,15 +95,14 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   }, []);
 
   const showArt = useCallback(
-    (result: Awaited<ReturnType<typeof renderTextBanner>>, note?: string) => {
+    (result: Awaited<ReturnType<typeof renderImage>>, note?: string) => {
       if (!result.ok) {
-        push([{ text: result.error, tone: "error" }]);
+        push([{ text: result.error, tone: "error" }, { text: "" }]);
         lastOutput.current = [result.error];
         return;
       }
-      const artLines = result.lines.map((text) => ({ text, art: true }) as OutputLine);
       push([
-        ...artLines,
+        ...result.lines.map((text) => ({ text, art: true }) as OutputLine),
         ...(note ? [{ text: note, tone: "muted" } as OutputLine] : []),
         { text: "" },
       ]);
@@ -107,9 +114,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const handleFile = useCallback(
     async (file: File) => {
       setBusy(true);
-      push([{ text: `ascii --image ${file.name}`, tone: "muted" }]);
-      const result = await renderImage(file);
-      showArt(result, "görsel tarayıcından hiç çıkmadı — 'copy' ile alabilirsin");
+      push([{ text: `ascii ${file.name}`, tone: "muted" }]);
+      const result = await renderImage(file, pickOptions.current);
+      showArt(result, "rendered in your browser — nothing was uploaded. 'copy' takes it.");
+      pickOptions.current = {};
       setBusy(false);
       inputRef.current?.focus();
     },
@@ -119,12 +127,12 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const submit = useCallback(
     async (raw: string) => {
       const input = raw.trim();
-      push([{ text: `$ ${input}`, tone: "accent" }]);
+      push([{ text: `${PROMPT} ${input}` }]);
       setValue("");
       setHistoryIndex(null);
       if (!input) return;
 
-      setHistory((prev) => [input, ...prev.filter((h) => h !== input)].slice(0, HISTORY_LIMIT));
+      setHistory((prev) => [input, ...prev.filter((entry) => entry !== input)].slice(0, HISTORY_LIMIT));
 
       const result = runCommand(input, ctx);
       if (result.lines.length > 0) {
@@ -154,26 +162,26 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         return;
       }
       if (intent.kind === "pick-image") {
+        pickOptions.current = { cols: intent.cols, invert: intent.invert };
         fileRef.current?.click();
         return;
       }
       if (intent.kind === "copy") {
         if (lastOutput.current.length === 0) {
-          push([{ text: "copy: kopyalanacak bir çıktı yok", tone: "error" }, { text: "" }]);
+          push([{ text: "copy: nothing to copy yet", tone: "error" }, { text: "" }]);
           return;
         }
         try {
           await navigator.clipboard.writeText(lastOutput.current.join("\n"));
-          push([{ text: "panoya kopyalandı", tone: "muted" }, { text: "" }]);
+          push([{ text: "copied to clipboard", tone: "muted" }, { text: "" }]);
         } catch {
-          push([{ text: "copy: tarayıcı panoya izin vermedi", tone: "error" }, { text: "" }]);
+          push([{ text: "copy: the browser refused clipboard access", tone: "error" }, { text: "" }]);
         }
         return;
       }
       if (intent.kind === "banner") {
         setBusy(true);
-        const result = await renderTextBanner(intent.text, intent.style);
-        showArt(result);
+        showArt(await renderBanner(intent.text));
         setBusy(false);
       }
     },
@@ -211,7 +219,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     }
 
     // Tab completes only when there is something to complete, so an empty
-    // prompt still hands focus to the close button for keyboard users.
+    // prompt still hands focus onward for keyboard users.
     if (event.key === "Tab" && value.trim()) {
       event.preventDefault();
       const matches = complete(value, ctx);
@@ -219,8 +227,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         setValue(matches[0]);
       } else if (matches.length > 1) {
         push([
-          { text: `$ ${value}`, tone: "accent" },
-          { text: `  ${matches.join("   ")}`, tone: "muted" },
+          { text: `${PROMPT} ${value}` },
+          { text: matches.join("   "), tone: "muted" },
           { text: "" },
         ]);
       }
@@ -229,7 +237,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch justify-center bg-ink/50 p-2 backdrop-blur-[2px] sm:items-center sm:p-6"
+      className="terminal-backdrop fixed inset-0 z-50 flex items-stretch justify-center bg-ink/50 p-2 backdrop-blur-[2px] sm:items-center sm:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -254,36 +262,38 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-label="Terminal"
-        className={`flex w-full max-w-3xl flex-col overflow-hidden rounded-xl border-[1.5px] bg-ink text-canvas sm:h-[70vh] ${
-          dragging ? "border-accent" : "border-canvas/25"
+        className={`terminal-window flex w-full max-w-3xl flex-col overflow-hidden rounded-[10px] shadow-2xl ring-1 sm:h-[70vh] ${
+          dragging ? "ring-2 ring-[#4fd6be]" : "ring-black/40"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-canvas/15 px-4 py-2.5">
-          <p className="font-ui text-[11px] uppercase tracking-wider text-canvas/60">
-            bilal@web — {dragging ? "görseli bırak" : "terminal"}
+        {/* Title bar */}
+        <div className="relative flex h-7 shrink-0 items-center bg-gradient-to-b from-[#e8e6e3] to-[#d6d2ce] px-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close terminal"
+              className="h-3 w-3 rounded-full bg-[#ff5f57] ring-1 ring-black/10 transition-opacity hover:opacity-70"
+            />
+            <span aria-hidden className="h-3 w-3 rounded-full bg-[#febc2e] ring-1 ring-black/10" />
+            <span aria-hidden className="h-3 w-3 rounded-full bg-[#28c840] ring-1 ring-black/10" />
+          </div>
+          <p className="pointer-events-none absolute inset-x-0 text-center text-[12px] font-semibold text-black/60">
+            {dragging ? "drop the image" : "bilal@web — -zsh — 100×30"}
           </p>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Terminali kapat"
-            className="font-ui text-[11px] uppercase tracking-wider text-canvas/60 hover:text-accent"
-          >
-            esc ✕
-          </button>
         </div>
 
+        {/* Screen */}
         <div
           ref={outputRef}
           role="log"
           aria-live="polite"
-          className="flex-1 overflow-y-auto px-4 py-3 font-ui text-[12px] leading-[1.55]"
+          onClick={() => inputRef.current?.focus()}
+          className="flex-1 overflow-auto bg-[#0b0b0b] px-3 py-2 font-terminal text-[12px] leading-[1.35] text-[#f2f2f2] selection:bg-[#f2f2f2]/25"
         >
           {lines.map((entry, index) =>
             entry.art ? (
-              <pre
-                key={index}
-                className="overflow-x-auto whitespace-pre text-[10px] leading-[1.05] text-canvas sm:text-[11px]"
-              >
+              <pre key={index} className="whitespace-pre text-[10px] leading-[1.05] sm:text-[11px]">
                 {entry.text}
               </pre>
             ) : (
@@ -291,44 +301,45 @@ export function Terminal({ onClose }: { onClose: () => void }) {
                 key={index}
                 className={`whitespace-pre-wrap break-words ${TONE_CLASS[entry.tone ?? "default"]}`}
               >
-                {entry.text || " "}
+                {entry.text || " "}
               </p>
             )
           )}
-          {busy && <p className="text-canvas/50">çiziliyor…</p>}
-        </div>
 
-        <div className="border-t border-canvas/15 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <span aria-hidden className="font-ui text-[12px] text-accent">
-              $
+          {busy && <p className="text-[#f2f2f2]/45">rendering…</p>}
+
+          {/* The live prompt sits in the scroll flow, the way a real one does. */}
+          <div className="flex items-baseline gap-2">
+            <span aria-hidden className="shrink-0 text-[#4fd6be]">
+              {PROMPT}
             </span>
             <input
               ref={inputRef}
               value={value}
               onChange={(event) => setValue(event.target.value)}
               onKeyDown={onKeyDown}
-              aria-label="Komut"
+              aria-label="Command"
               autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
-              placeholder="help"
-              className="w-full bg-transparent font-ui text-[12px] text-canvas placeholder:text-canvas/30 focus:outline-none"
+              className="w-full bg-transparent font-terminal text-[12px] text-[#f2f2f2] caret-[#f2f2f2] focus:outline-none"
             />
           </div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {CHIPS.map((chip) => (
-              <button
-                key={chip}
-                type="button"
-                onClick={() => void submit(chip)}
-                className="rounded-full border border-canvas/25 px-2.5 py-1 font-ui text-[10px] uppercase tracking-wider text-canvas/60 hover:border-accent hover:text-accent"
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
+        </div>
+
+        {/* Typing is awkward on a phone; on a desktop the window stays pure. */}
+        <div className="flex flex-wrap gap-1.5 bg-[#0b0b0b] px-3 pb-2.5 sm:hidden">
+          {SUGGESTIONS.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => void submit(suggestion)}
+              className="rounded border border-[#f2f2f2]/20 px-2 py-1 font-terminal text-[10px] text-[#f2f2f2]/60"
+            >
+              {suggestion}
+            </button>
+          ))}
         </div>
       </div>
 

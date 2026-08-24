@@ -11,6 +11,10 @@
 
   --font-display: var(--font-silkscreen), monospace;
   --font-ui: var(--font-jetbrains), ui-monospace, monospace;
+  /* The web terminal borrows macOS Terminal's face: SF Mono where it exists,
+     Menlo on older Macs, then whatever else the platform calls a mono. */
+  --font-terminal: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco,
+    "Cascadia Mono", "Roboto Mono", monospace;
   /* Helvetica where it exists (macOS/iOS), Arial next, Inter as the web
      fallback for platforms that ship neither. */
   --font-body: "Helvetica Neue", Helvetica, Arial, var(--font-inter),
@@ -59,6 +63,38 @@ body {
 .card-copy::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--color-ink) 22%, transparent);
   border-radius: 3px;
+}
+
+/* The terminal should arrive the way a window does, not blink into existence.
+   Short enough that it never delays typing, and skipped entirely when the
+   visitor has asked for less motion. */
+@keyframes terminal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes terminal-window-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+.terminal-backdrop {
+  animation: terminal-backdrop-in 160ms ease-out both;
+}
+
+.terminal-window {
+  animation: terminal-window-in 220ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  transform-origin: 50% 65%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-backdrop,
+  .terminal-window {
+    animation: none;
+  }
 }
 
 .text-balance {
