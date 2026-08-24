@@ -36,7 +36,7 @@ export const siteConfig: SiteConfig = {
     "Ahmet Bilal Yazicioglu",
     "A. Bilal Yazıcıoğlu",
   ],
-  url: "https://bilalyazicioglu.com.tr",
+  url: "https://bilalyazicioglu.com",
   role: "Computer Engineering & Business Administration Student",
   tagline: "Code, hoops, nature, and exploring new places.",
   bio: "I'm a Computer Engineering and Business Administration student at Marmara University (enrolled in 2024), including a memorable Erasmus semester at Universidad de Oviedo in Spain. Beyond tech and classes, I feel most at ease on the basketball court, traveling to new places, hanging out with friends, or recharging on long hikes in nature.",
