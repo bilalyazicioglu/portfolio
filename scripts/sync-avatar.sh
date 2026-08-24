@@ -23,15 +23,31 @@ if [ -z "${AVATAR_URL}" ]; then
 fi
 
 TMP="$(mktemp)"
-trap 'rm -f "${TMP}"' EXIT
+PNG="$(mktemp)"
+trap 'rm -f "${TMP}" "${PNG}"' EXIT
 curl -fsSL "${AVATAR_URL}&s=${SIZE}" -o "${TMP}"
 
-# Reject anything that is not a PNG so a failed fetch cannot break the build.
-if [ "$(head -c 8 "${TMP}" | xxd -p)" != "89504e470d0a1a0a" ]; then
-  echo "Downloaded file is not a PNG. Leaving ${DEST} untouched." >&2
-  exit 1
-fi
+# GitHub hands back the avatar in whatever format it was uploaded in, so this is
+# usually JPEG. Sniff the magic bytes with od (present everywhere, unlike xxd)
+# so a failed fetch that lands HTML or JSON here cannot break the build, then
+# normalise to PNG because the site references github-avatar.png.
+MAGIC="$(od -An -tx1 -N4 "${TMP}" | tr -d ' \n')"
+case "${MAGIC}" in
+  89504e47)
+    cp "${TMP}" "${PNG}"
+    ;;
+  ffd8ff??)
+    if ! SRC="${TMP}" OUT="${PNG}" node -e 'require("sharp")(process.env.SRC).png().toFile(process.env.OUT).catch((err) => { console.error(err.message); process.exit(1); })'; then
+      echo "Downloaded a JPEG avatar but could not convert it to PNG. Run 'npm install' so sharp is available." >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Downloaded file is not a PNG or JPEG (magic bytes: ${MAGIC:-none}). Leaving ${DEST} untouched." >&2
+    exit 1
+    ;;
+esac
 
-mv "${TMP}" "${DEST}"
-trap - EXIT
+mv "${PNG}" "${DEST}"
+chmod 644 "${DEST}" # mktemp creates 0600 files; the checked-in asset must be readable
 echo "Updated ${DEST} ($(wc -c < "${DEST}" | tr -d ' ') bytes). Commit and redeploy to publish."
