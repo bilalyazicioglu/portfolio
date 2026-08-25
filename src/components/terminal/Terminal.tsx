@@ -15,6 +15,9 @@ import {
 
 const HISTORY_LIMIT = 50;
 
+/** How long a full-size piece of ASCII art takes to type itself out. */
+const TYPE_MS = 2000;
+
 /** macOS zsh shape, so the window reads as a shell at a glance. */
 const PROMPT = "bilal@web ~ %";
 
@@ -51,6 +54,9 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const pickOptions = useRef<{ cols?: number; invert?: boolean }>({});
   /** The last command's output, which is what `copy` puts on the clipboard. */
   const lastOutput = useRef<string[]>([]);
+  /** The art currently typing itself out, if any. */
+  const typing = useRef<{ frame: number; finish: () => void } | null>(null);
+  const blockId = useRef(0);
 
   const ctx: CommandContext = useMemo(
     () => ({ posts, postsLoading, projects }),
@@ -115,6 +121,91 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     selection?.addRange(range);
   }, []);
 
+  /**
+   * Types the art out instead of dropping it in finished.
+   *
+   * Character by character, but a batch per animation frame rather than a timer
+   * per character: a photo is thousands of glyphs and the whole point is that
+   * the run lasts about two seconds whatever its size. A keystroke, or a second
+   * image, cuts it short and shows the rest at once.
+   */
+  const typeArt = useCallback((artLines: string[], note?: string) => {
+    const total = artLines.reduce((sum, art) => sum + art.length, 0);
+    const duration = Math.min(TYPE_MS, Math.max(500, total * 3));
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // The block is found by its own id rather than by the index it landed on:
+    // where it sits in the log is React's business, not this loop's.
+    const block = ++blockId.current;
+    setLines((prev) => [
+      ...prev,
+      ...artLines.map(() => ({ text: "", art: true, block }) as OutputLine),
+    ]);
+
+    const write = (revealed: number) => {
+      setLines((prev) => {
+        let left = revealed;
+        let i = 0;
+        return prev.map((entry) => {
+          if (entry.block !== block) return entry;
+          const art = artLines[i++] ?? "";
+          const taken = Math.max(0, Math.min(art.length, left));
+          left -= art.length;
+          return { ...entry, text: art.slice(0, taken) };
+        });
+      });
+    };
+
+    const finish = () => {
+      typing.current = null;
+      setLines((prev) => {
+        let i = 0;
+        const next = prev.map((entry) =>
+          entry.block === block ? { ...entry, text: artLines[i++] ?? "" } : entry
+        );
+        return [
+          ...next,
+          ...(note ? [{ text: note, tone: "muted" } as OutputLine] : []),
+          { text: "" },
+        ];
+      });
+    };
+
+    if (reduceMotion || total === 0) {
+      finish();
+      return;
+    }
+
+    const began = performance.now();
+    const step = () => {
+      const progress = (performance.now() - began) / duration;
+      if (progress >= 1) {
+        finish();
+        return;
+      }
+      write(Math.round(total * progress));
+      typing.current = { frame: requestAnimationFrame(step), finish };
+    };
+
+    typing.current = { frame: requestAnimationFrame(step), finish };
+  }, []);
+
+  /** Cuts a run short, so nothing waits on the animation. */
+  const skipTyping = useCallback(() => {
+    const run = typing.current;
+    if (!run) return;
+    cancelAnimationFrame(run.frame);
+    typing.current = null;
+    run.finish();
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (typing.current) cancelAnimationFrame(typing.current.frame);
+    },
+    []
+  );
+
   const showArt = useCallback(
     (result: Awaited<ReturnType<typeof renderImage>>, note?: string) => {
       if (!result.ok) {
@@ -122,18 +213,17 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         lastOutput.current = [result.error];
         return;
       }
-      push([
-        ...result.lines.map((text) => ({ text, art: true }) as OutputLine),
-        ...(note ? [{ text: note, tone: "muted" } as OutputLine] : []),
-        { text: "" },
-      ]);
+      // The clipboard gets the finished art from the first frame, so `copy`
+      // never depends on the animation having caught up.
       lastOutput.current = result.lines;
+      typeArt(result.lines, note);
     },
-    [push]
+    [push, typeArt]
   );
 
   const handleFile = useCallback(
     async (file: File) => {
+      skipTyping();
       setBusy(true);
       push([{ text: `ascii ${file.name}`, tone: "muted" }]);
       const result = await renderImage(file, pickOptions.current);
@@ -142,11 +232,12 @@ export function Terminal({ onClose }: { onClose: () => void }) {
       setBusy(false);
       inputRef.current?.focus();
     },
-    [push, showArt]
+    [push, showArt, skipTyping]
   );
 
   const submit = useCallback(
     async (raw: string) => {
+      skipTyping();
       const input = raw.trim();
       push([{ text: `${PROMPT} ${input}` }]);
       setCommand("");
@@ -206,10 +297,12 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         setBusy(false);
       }
     },
-    [ctx, onClose, push, router, setCommand, showArt]
+    [ctx, onClose, push, router, setCommand, showArt, skipTyping]
   );
 
   function onKeyDown(event: React.KeyboardEvent<HTMLSpanElement>) {
+    skipTyping();
+
     if (event.key === "Enter") {
       event.preventDefault();
       void submit(value);

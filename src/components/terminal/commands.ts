@@ -24,6 +24,8 @@ export type OutputLine = {
   tone?: LineTone;
   /** Rendered in a horizontally scrollable <pre> — used for ASCII art. */
   art?: boolean;
+  /** Marks the lines of one piece of art, so it can be typed out in place. */
+  block?: number;
 };
 
 export type CommandIntent =
