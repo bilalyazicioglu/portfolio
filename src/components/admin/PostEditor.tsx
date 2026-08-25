@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isValidSlug, slugify } from "@/lib/slug";
+import type { PostLang } from "@/lib/blog";
 
 export type EditorPost = {
   slug: string;
@@ -11,6 +12,7 @@ export type EditorPost = {
   summary: string;
   date: string;
   tags: string[];
+  lang: PostLang;
   draft: boolean;
   content: string;
 };
@@ -43,6 +45,7 @@ export function PostEditor({
   const [summary, setSummary] = useState(initialPost?.summary ?? "");
   const [date, setDate] = useState(initialPost?.date ?? today());
   const [tags, setTags] = useState((initialPost?.tags ?? []).join(", "));
+  const [lang, setLang] = useState<PostLang>(initialPost?.lang ?? "tr");
   const [content, setContent] = useState(initialPost?.content ?? "");
 
   const [busy, setBusy] = useState(false);
@@ -76,6 +79,7 @@ export function PostEditor({
           title,
           summary,
           date,
+          lang,
           tags: tags
             .split(",")
             .map((tag) => tag.trim())
@@ -198,6 +202,25 @@ export function PostEditor({
           onChange={(e) => setSummary(e.target.value)}
           placeholder="Liste sayfasında ve arama sonuçlarında görünen kısa açıklama"
         />
+      </div>
+
+      <div>
+        <span className={label}>Dil</span>
+        <div className="flex gap-2">
+          {(["tr", "en"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setLang(option)}
+              aria-pressed={lang === option}
+              className={`border-[1.5px] border-ink px-4 py-2 font-ui text-xs font-bold uppercase tracking-wider transition-colors ${
+                lang === option ? "bg-ink text-surface" : "text-ink/60 hover:text-ink"
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

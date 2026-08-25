@@ -13,12 +13,16 @@ export function getBlogDir(): string {
   return path.join(process.cwd(), "src/content/blog");
 }
 
+/** Posts are written in one language or the other, never both. */
+export type PostLang = "tr" | "en";
+
 export type PostMeta = {
   slug: string;
   title: string;
   summary: string;
   date: string;
   tags: string[];
+  lang: PostLang;
   draft: boolean;
   readingTime: string;
 };
@@ -33,6 +37,7 @@ export type PostInput = {
   summary: string;
   date: string;
   tags: string[];
+  lang: PostLang;
   draft: boolean;
   content: string;
 };
@@ -63,6 +68,9 @@ function toMeta(slug: string, data: matter.GrayMatterFile<string>["data"], conte
     summary: (data.summary as string) ?? "",
     date: (data.date as string) ?? "",
     tags: (data.tags as string[]) ?? [],
+    // Anything but an explicit "tr" reads as English, so posts written before
+    // this field existed keep the language they were already served as.
+    lang: data.lang === "tr" ? "tr" : "en",
     draft: data.draft === true,
     readingTime: readingTime(content).text,
   };
@@ -110,6 +118,7 @@ export function writePost(input: PostInput): void {
     summary: input.summary,
     date: input.date,
     tags: input.tags,
+    lang: input.lang,
     ...(input.draft ? { draft: true } : {}),
   });
 

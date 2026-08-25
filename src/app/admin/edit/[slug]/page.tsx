@@ -31,6 +31,7 @@ export default async function EditPostPage({
         summary: post.summary,
         date: post.date,
         tags: post.tags,
+        lang: post.lang,
         draft: post.draft,
         content: post.content,
       }}
