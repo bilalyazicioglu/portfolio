@@ -44,7 +44,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLSpanElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
   /** Options the pending file picker was opened with (`ascii --width 120`). */
@@ -94,6 +94,27 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     setLines((prev) => [...prev, ...next]);
   }, []);
 
+  /**
+   * The command line is a contenteditable span rather than an <input>, so
+   * Safari's keychain never mistakes it for a username field and offers to fill
+   * in a saved login. That means React does not own its text: history, Tab
+   * completion and clearing all write it here, and put the caret back at the
+   * end afterwards.
+   */
+  const setCommand = useCallback((next: string) => {
+    setValue(next);
+    const element = inputRef.current;
+    if (!element || element.textContent === next) return;
+    element.textContent = next;
+
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.collapse(false);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, []);
+
   const showArt = useCallback(
     (result: Awaited<ReturnType<typeof renderImage>>, note?: string) => {
       if (!result.ok) {
@@ -128,7 +149,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     async (raw: string) => {
       const input = raw.trim();
       push([{ text: `${PROMPT} ${input}` }]);
-      setValue("");
+      setCommand("");
       setHistoryIndex(null);
       if (!input) return;
 
@@ -185,10 +206,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         setBusy(false);
       }
     },
-    [ctx, onClose, push, router, showArt]
+    [ctx, onClose, push, router, setCommand, showArt]
   );
 
-  function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+  function onKeyDown(event: React.KeyboardEvent<HTMLSpanElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
       void submit(value);
@@ -200,7 +221,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
       if (history.length === 0) return;
       const next = historyIndex === null ? 0 : Math.min(historyIndex + 1, history.length - 1);
       setHistoryIndex(next);
-      setValue(history[next]);
+      setCommand(history[next]);
       return;
     }
 
@@ -210,11 +231,11 @@ export function Terminal({ onClose }: { onClose: () => void }) {
       const next = historyIndex - 1;
       if (next < 0) {
         setHistoryIndex(null);
-        setValue("");
+        setCommand("");
         return;
       }
       setHistoryIndex(next);
-      setValue(history[next]);
+      setCommand(history[next]);
       return;
     }
 
@@ -224,7 +245,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
       event.preventDefault();
       const matches = complete(value, ctx);
       if (matches.length === 1) {
-        setValue(matches[0]);
+        setCommand(matches[0]);
       } else if (matches.length > 1) {
         push([
           { text: `${PROMPT} ${value}` },
@@ -313,22 +334,27 @@ export function Terminal({ onClose }: { onClose: () => void }) {
             <span aria-hidden className="shrink-0 text-[#4fd6be]">
               {PROMPT}
             </span>
-            <input
+            <span
               ref={inputRef}
-              type="text"
-              name="terminal-cmd"
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-              onKeyDown={onKeyDown}
+              role="textbox"
               aria-label="Command"
-              // A shell prompt is not a form field: no autofill, no
-              // autocorrect, no capitalised first letter on a phone, no red
+              aria-multiline="false"
+              contentEditable="plaintext-only"
+              suppressContentEditableWarning
+              onInput={(event) => setValue(event.currentTarget.textContent ?? "")}
+              onKeyDown={onKeyDown}
+              onPaste={(event) => {
+                // A shell line is one line: paste as plain text, newlines out.
+                event.preventDefault();
+                const text = event.clipboardData.getData("text/plain").replace(/\s+/g, " ");
+                document.execCommand("insertText", false, text);
+              }}
+              // No autocorrect, no capitalised first letter on a phone, no red
               // squiggles under `neofetch`.
-              autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
-              className="w-full bg-transparent font-terminal text-[12px] text-[#f2f2f2] caret-[#f2f2f2] focus:outline-none"
+              className="min-w-[1ch] flex-1 whitespace-pre-wrap break-words bg-transparent font-terminal text-[12px] text-[#f2f2f2] caret-[#f2f2f2] focus:outline-none"
             />
           </div>
         </div>
@@ -339,7 +365,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
             <button
               key={suggestion}
               type="button"
-              onClick={() => void submit(suggestion)}
+              onClick={() => {
+                void submit(suggestion);
+                inputRef.current?.focus();
+              }}
               className="rounded border border-[#f2f2f2]/20 px-2 py-1 font-terminal text-[10px] text-[#f2f2f2]/60"
             >
               {suggestion}
