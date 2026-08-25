@@ -315,10 +315,15 @@ export function Terminal({ onClose }: { onClose: () => void }) {
             </span>
             <input
               ref={inputRef}
+              type="text"
+              name="terminal-cmd"
               value={value}
               onChange={(event) => setValue(event.target.value)}
               onKeyDown={onKeyDown}
               aria-label="Command"
+              // A shell prompt is not a form field: no autofill, no
+              // autocorrect, no capitalised first letter on a phone, no red
+              // squiggles under `neofetch`.
               autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
