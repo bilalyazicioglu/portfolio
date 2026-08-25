@@ -1,0 +1,141 @@
+% One page at 10pt. The point size buys the whitespace: at 11pt this content
+% only fits by squeezing the projects, which is the section worth reading.
+% If it ever spills onto page 2: drop itemsep in \resumeSubHeadingListStart to 3pt.
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{latexsym,fullpage,titlesec,marvosym,color,enumitem,hyperref,fancyhdr,tabularx}
+
+% Page setup
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-0.6in}
+\addtolength{\textheight}{1.4in}
+\urlstyle{same}
+\raggedbottom
+\setlength{\parskip}{0pt}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue,
+    pdftitle={Ahmet Bilal Yazicioglu - CV},
+    pdfauthor={Ahmet Bilal Yazicioglu}
+}
+
+\titleformat{\section}{\vspace{4pt}\scshape\raggedright\large}{}{0em}{}[\color{black}\titlerule \vspace{-2pt}]
+
+% Custom commands
+\newcommand{\resumeItem}[1]{\item\small{{#1}}}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-4pt}
+}
+
+% #1 project, #2 stack, #3 date. The stack line says what the thing is built out
+% of before the reader gets to any prose.
+\newcommand{\resumeProject}[3]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textit{\small #3} \\
+      \textit{\small#2} & \\
+    \end{tabular*}\vspace{-4pt}
+}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}, itemsep=7pt, parsep=0pt, topsep=5pt]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.28in, itemsep=3pt, parsep=0pt, topsep=4pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-3pt}}
+
+\begin{document}
+
+% --- HEADING ---
+\begin{center}
+    \textbf{\Huge \scshape Ahmet Bilal Yazıcıoğlu} \\ \vspace{5pt}
+    \small Istanbul, Turkey $|$ \href{mailto:ahmetbilalyazicioglu@gmail.com}{ahmetbilalyazicioglu@gmail.com} $|$ +90 544 160 84 18 \\ \vspace{2pt}
+    \href{https://bilalyazicioglu.com}{bilalyazicioglu.com} $|$
+    \href{https://www.linkedin.com/in/bilal-yazicioglu}{linkedin.com/in/bilal-yazicioglu} $|$
+    \href{https://github.com/bilalyazicioglu}{github.com/bilalyazicioglu}
+\end{center}
+
+% --- SUMMARY ---
+\section{Summary}
+\small Computer Engineering student at Marmara University, completed an Erasmus+ exchange at Universidad de Oviedo. I build systems end to end and ship them: a multi-tenant AR platform with an SDK published on npm, a peer-to-peer voice chat in \textbf{Rust}, and a self-hosted \textbf{Next.js} site behind my own Docker, monitoring and CI/CD stack. Comfortable across \textbf{Java, Go, Rust, TypeScript and Python}, with tests and observability as standard parts of the work.
+
+% --- EDUCATION ---
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading{Marmara University}{Istanbul, TR}{BS in Computer Engineering (GPA 3.34/4.00) --- Minor in Business Administration}{2024 -- Present}
+    \resumeSubheading{Universidad de Oviedo}{Oviedo, ES}{Erasmus+ Exchange Student, Computer Science}{2026}
+  \resumeSubHeadingListEnd
+
+% --- PROJECTS ---
+\section{Selected Projects}
+  \resumeSubHeadingListStart
+    \resumeProject{ARpoly --- Augmented Reality API Platform}
+      {Node.js, Express, MongoDB/GridFS, Redis + BullMQ, React, Three.js, Swift, Python}{2026}
+      \resumeItemListStart
+        \resumeItem{Multi-tenant REST platform that turns a phone video of an object into a real-scale 3D model (GLB + USDZ), so customers view products in AR with no app install. 280+ automated tests, GitHub Actions CI/CD to GHCR, Prometheus/Grafana.}
+        \resumeItem{Client SDK published on npm as \href{https://www.npmjs.com/package/@arpoly/react}{\underline{@arpoly/react}} (Apache-2.0); reconstruction is pluggable behind one interface, wrapping Apple's PhotogrammetrySession and a CUDA Gaussian-splat service.}
+      \resumeItemListEnd
+
+    \resumeProject{tincan --- Serverless Terminal Voice Chat}
+      {Rust, iroh/QUIC, Opus, ratatui \textbullet\ \href{https://github.com/bilalyazicioglu/tincan-cli}{\underline{github.com/bilalyazicioglu/tincan-cli}}}{2026}
+      \resumeItemListStart
+        \resumeItem{Terminal voice chat with no central server: the host generates an invite code and peers join from anywhere, with no port forwarding, VPN or accounts.}
+        \resumeItem{Audio travels as a peer-to-peer mesh of QUIC datagrams (Opus, per-peer jitter buffering) behind an Argon2id handshake. 93 automated tests, including integration tests over real QUIC endpoints.}
+      \resumeItemListEnd
+
+    \resumeProject{Personal Portfolio \& Monitoring Stack}
+      {Next.js, TypeScript, MDX, Docker, Nginx, Prometheus/Loki/Grafana \textbullet\ \href{https://bilalyazicioglu.com}{\underline{bilalyazicioglu.com}}}{2026}
+      \resumeItemListStart
+        \resumeItem{Self-hosted in Docker behind Nginx and Cloudflare, with metrics and logs on Grafana dashboards. The in-browser MDX editor is reachable only over a private Tailscale network, so the admin boundary is the network itself, not a login form.}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+% --- EXPERIENCE ---
+\section{Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading{Kombi Klima Shop}{Istanbul, TR}{Software Developer Intern}{2025}
+      \resumeItemListStart
+        \resumeItem{Extended an e-commerce backend in \textbf{Java/Spring Boot}, improving system performance and order processing workflows.}
+        \resumeItem{Built a \textbf{SQL}-based stock automation system that replaced manual tracking and significantly reduced counting errors.}
+      \resumeItemListEnd
+
+    \resumeSubheading{Software Architecture Project (\href{https://github.com/Arquisoft/yovi_en1b}{\underline{yovi\_en1b}})}{Oviedo, ES}{Developer / Architect --- Universidad de Oviedo}{2026}
+      \resumeItemListStart
+        \resumeItem{Built a multi-service hexagonal game engine in \textbf{Rust}, owning game logic and bots in a team, with \textbf{Docker} deployment, \textbf{GitHub Actions} CI/CD and arc42 documentation.}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+% --- SKILLS ---
+\section{Skills}
+  \begin{itemize}[leftmargin=0.15in, label={}, topsep=5pt]
+    \small{\item{
+      \textbf{Languages}{: Java, Go, Rust, Python, C, SQL, TypeScript, JavaScript} \\ \vspace{3pt}
+      \textbf{Backend \& Data}{: Spring Boot, Node.js/Express, REST APIs, PostgreSQL, MySQL, MongoDB, Redis} \\ \vspace{3pt}
+      \textbf{Frontend \& DevOps}{: React, Next.js, Three.js, Tailwind CSS, Docker, GitHub Actions, Nginx, Cloudflare, Prometheus/Grafana/Loki} \\ \vspace{3pt}
+      \textbf{Spoken}{: Turkish (Native), English (Proficient), Spanish (Elementary)}
+    }}
+  \end{itemize}
+
+% --- LEADERSHIP & ACTIVITIES ---
+\section{Leadership \& Activities}
+  \begin{itemize}[leftmargin=0.15in, label={}, topsep=5pt]
+    \small{\item{
+      \textbf{Tuta --- Open Source}{: Localization Translator for a privacy-first email and calendar client.} \\ \vspace{3pt}
+      \textbf{Basketball}{: Marmara University team and Universidad de Oviedo team --- 10+ years of competitive play.}
+    }}
+  \end{itemize}
+
+\end{document}
