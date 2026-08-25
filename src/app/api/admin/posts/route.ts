@@ -63,6 +63,9 @@ function parsePayload(body: unknown): { post: PostInput; overwrite: boolean } | 
       summary: typeof raw.summary === "string" ? raw.summary.trim() : "",
       date,
       tags,
+      // Only the two known languages are accepted; anything else is English,
+      // matching how `toMeta` reads a post back off disk.
+      lang: raw.lang === "tr" ? "tr" : "en",
       draft: raw.draft === true,
       content,
     },

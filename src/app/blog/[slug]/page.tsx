@@ -30,6 +30,9 @@ export async function generateMetadata({
       alternates: {
         canonical: `/blog/${slug}`,
       },
+      openGraph: {
+        locale: post.lang === "tr" ? "tr_TR" : "en_US",
+      },
     };
   } catch {
     return {};
@@ -84,6 +87,9 @@ export default async function BlogPostPage({
           </span>
           <span className="text-ink/20">/</span>
           <ViewCounter slug={slug} initialViews={initialViews} />
+          <span className="rounded-full border border-accent px-2 py-0.5 font-ui text-[10px] font-bold uppercase tracking-wider text-accent">
+            {post.lang}
+          </span>
         </div>
         <h1 className="font-display text-3xl leading-[1.2] sm:text-5xl">
           {post.title}
@@ -100,7 +106,9 @@ export default async function BlogPostPage({
         </div>
       </div>
 
-      <article className="prose-post px-4 py-10 sm:px-6">
+      {/* The document is `lang="en"`; a Turkish post has to say so itself, or a
+          screen reader reads it with English phonetics. */}
+      <article lang={post.lang} className="prose-post px-4 py-10 sm:px-6">
         <MDXRemote source={post.content} />
       </article>
 

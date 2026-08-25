@@ -17,7 +17,9 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 - `src/site.config.ts` — name, role, bio, socials, contact info.
 - `src/lib/projects.ts` — portfolio project data.
 - `src/content/blog/*.mdx` — blog posts (frontmatter: `title`, `summary`, `date`,
-  `tags`, optional `draft: true`).
+  `tags`, `lang: "tr" | "en"`, optional `draft: true`). `lang` drives the TR/EN
+  filter on `/blog` and the `lang` attribute on the post itself; anything other
+  than `"tr"` is treated as English.
 
 Posts with `draft: true` are hidden from `/blog`, from the sitemap, and return
 404 on their public URL. They are only visible through the admin preview.
