@@ -354,21 +354,29 @@ const exit: Command = {
 };
 
 /**
- * Drawn in the same block characters as the neofetch logo, so the one rude
- * thing on the site is at least wearing the house style.
+ * Not hand-drawn: this is the site's own `ascii` engine output for a picture of
+ * the gesture, at the same 46 columns anyone would get by running it. The
+ * speckle is the converter's, and it stays — it is the house style, and the
+ * shape reads through it.
  */
 const FINGER = [
-  "        ▄████▄",
-  "        ██████",
-  "        ██████",
-  "        ██████",
-  "  ▄███▄ ██████ ▄███▄",
-  "  █████ ██████ █████",
-  "  ██████████████████",
-  "  ██████████████████",
-  "  ██████████████████",
-  "   ████████████████",
-  "    ██████████████",
+  ".  .  .  .  .  .  .   B$$a .  .  .  .  .  .  .",
+  "                     B   B",
+  "  .  .  .  .  .  .  .B   B   .  .  .  .  .  .",
+  ".  .  .  .  .  .  .  B   B .  .  .  .  .  .  .",
+  ".  .  .  .  .  .  .  B   B .  .  .  .  .  .  .",
+  "  .  .  .  .  .   BBBB   B   .  .  .  .  .  .",
+  ".  .  .  .  .  .L&   $   B*  &BB .  .  .  .  .",
+  ".  .  .  .     .LB   $   B*  B~ B*  .  .  .  .",
+  "  .  .  .  %0  BBB       B*  B~  *B.  .  .  .",
+  ".  .  .  . @%   kB               *B .  .  .  .",
+  ".  .  .  .  &&B kB               *B .  .  .  .",
+  "  .  .  .  .  8                  *B.  .  .  .",
+  ".  .  .  .  .  B$               @$$ .  .  .  .",
+  ".  .  .  .  .  . B              %*  .  .  .  .",
+  "  .  .  .  .  .  B            LBB* .  .  .  .",
+  ".  .  .  .  .  .  B           CB .  .  .  .  .",
+  ".  .  .  .  .  .  BBBBBBBBBBBB%B .  .  .  .  .",
 ];
 
 /** Five answers, one picked per attempt. Four of them are only words. */
