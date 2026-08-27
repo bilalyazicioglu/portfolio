@@ -9,6 +9,7 @@
  */
 
 import type { Project } from "@/lib/projects";
+import type { ResolvedTheme, Theme } from "@/components/ThemeProvider";
 import { siteConfig } from "@/site.config";
 
 export type PostSummary = {
@@ -34,7 +35,9 @@ export type CommandIntent =
   | { kind: "close" }
   | { kind: "copy" }
   | { kind: "pick-image"; cols?: number; invert?: boolean }
-  | { kind: "banner"; text: string };
+  | { kind: "banner"; text: string }
+  /* Always a concrete choice: `theme toggle` is resolved by the command. */
+  | { kind: "theme"; mode: Theme };
 
 export type CommandResult = {
   lines: OutputLine[];
@@ -45,6 +48,8 @@ export type CommandContext = {
   posts: PostSummary[];
   postsLoading: boolean;
   projects: Project[];
+  theme: Theme;
+  resolvedTheme: ResolvedTheme;
 };
 
 type Command = {
@@ -287,6 +292,45 @@ const banner: Command = {
   },
 };
 
+const theme: Command = {
+  name: "theme",
+  summary: "Switch between light and dark",
+  usage: "theme [dark|light|system]",
+  run: (args, ctx) => {
+    const target = (args[0] ?? "").toLowerCase();
+
+    if (!target || target === "status") {
+      const suffix = ctx.theme === "system" ? ` (system says ${ctx.resolvedTheme})` : "";
+      return {
+        lines: [
+          line(`theme: ${ctx.theme}${suffix}`),
+          line("  theme dark · theme light · theme system · theme toggle", "muted"),
+        ],
+      };
+    }
+
+    // `toggle` is answered against what is on screen, not what was chosen, so
+    // it always flips the palette the visitor is actually looking at.
+    const mode: Theme | null =
+      target === "dark" || target === "light" || target === "system"
+        ? target
+        : target === "toggle"
+          ? ctx.resolvedTheme === "dark"
+            ? "light"
+            : "dark"
+          : null;
+
+    if (!mode) {
+      return { lines: [line(`theme: ${target}: try dark, light, system or toggle`, "error")] };
+    }
+
+    return {
+      lines: [line(`theme set to ${mode}`, "muted")],
+      intent: { kind: "theme", mode },
+    };
+  },
+};
+
 const copy: Command = {
   name: "copy",
   summary: "Copy the last output to the clipboard",
@@ -327,6 +371,7 @@ const REGISTRY: Command[] = [
   neofetch,
   ascii,
   banner,
+  theme,
   copy,
   clear,
   exit,
@@ -349,6 +394,7 @@ export function complete(input: string, ctx: CommandContext): string[] {
   if (name === "ls") candidates = ["projects", "blog"];
   if (name === "cat") candidates = ["about", "cv", "contact"];
   if (name === "ascii") candidates = ["--width", "--invert"];
+  if (name === "theme") candidates = ["dark", "light", "system", "toggle"];
   if (name === "open") {
     candidates = [
       ...PAGES.map((page) => page.name),

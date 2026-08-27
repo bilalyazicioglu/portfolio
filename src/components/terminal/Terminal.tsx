@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { projects } from "@/lib/projects";
+import { useTheme } from "@/components/ThemeProvider";
 import { renderBanner, renderImage } from "./ascii";
 import {
   complete,
@@ -38,6 +39,7 @@ const TONE_CLASS: Record<string, string> = {
  */
 export function Terminal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [lines, setLines] = useState<OutputLine[]>(() => welcomeLines());
   const [value, setValue] = useState("");
   const [history, setHistory] = useState<string[]>([]);
@@ -59,8 +61,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const blockId = useRef(0);
 
   const ctx: CommandContext = useMemo(
-    () => ({ posts, postsLoading, projects }),
-    [posts, postsLoading]
+    () => ({ posts, postsLoading, projects, theme, resolvedTheme }),
+    [posts, postsLoading, theme, resolvedTheme]
   );
 
   useEffect(() => {
@@ -291,13 +293,17 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         }
         return;
       }
+      if (intent.kind === "theme") {
+        setTheme(intent.mode);
+        return;
+      }
       if (intent.kind === "banner") {
         setBusy(true);
         showArt(await renderBanner(intent.text));
         setBusy(false);
       }
     },
-    [ctx, onClose, push, router, setCommand, showArt, skipTyping]
+    [ctx, onClose, push, router, setCommand, setTheme, showArt, skipTyping]
   );
 
   function onKeyDown(event: React.KeyboardEvent<HTMLSpanElement>) {
@@ -351,7 +357,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="terminal-backdrop fixed inset-0 z-50 flex items-stretch justify-center bg-ink/50 p-2 backdrop-blur-[2px] sm:items-center sm:p-6"
+      className="terminal-backdrop fixed inset-0 z-50 flex items-stretch justify-center bg-black/50 p-2 backdrop-blur-[2px] sm:items-center sm:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
