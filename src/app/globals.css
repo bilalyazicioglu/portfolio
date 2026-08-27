@@ -12,15 +12,14 @@
   --color-line: #16150f;
 
   --font-display: var(--font-silkscreen), monospace;
-  --font-ui: var(--font-jetbrains), ui-monospace, monospace;
+  --font-ui: var(--font-plex-mono), ui-monospace, monospace;
   /* The web terminal borrows macOS Terminal's face: SF Mono where it exists,
      Menlo on older Macs, then whatever else the platform calls a mono. */
   --font-terminal: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco,
     "Cascadia Mono", "Roboto Mono", monospace;
-  /* Helvetica where it exists (macOS/iOS), Arial next, Inter as the web
-     fallback for platforms that ship neither. */
-  --font-body: "Helvetica Neue", Helvetica, Arial, var(--font-inter),
-    ui-sans-serif, system-ui, sans-serif;
+  /* One face for every visitor. The old stack resolved to Helvetica on macOS,
+     Arial on Windows and Inter elsewhere — three personalities for one site. */
+  --font-body: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 * {

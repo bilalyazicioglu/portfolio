@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Silkscreen, JetBrains_Mono, Inter } from "next/font/google";
+import { Silkscreen, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -15,14 +15,19 @@ const silkscreen = Silkscreen({
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains",
+// Plex Sans and Plex Mono are drawn on the same skeleton, so the labels and the
+// prose read as one voice instead of two borrowed ones. Only 400 and 700 are
+// loaded because those are the only weights the site actually sets.
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
+  weight: ["400", "700"],
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  weight: ["400", "700"],
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
@@ -126,7 +131,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${silkscreen.variable} ${jetbrainsMono.variable} ${inter.variable} h-full`}
+      className={`${silkscreen.variable} ${plexSans.variable} ${plexMono.variable} h-full`}
       // `data-theme` is written by the inline script below before React ever
       // sees this element, which is exactly the mismatch React would warn about.
       suppressHydrationWarning
