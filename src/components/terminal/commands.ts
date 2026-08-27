@@ -6,6 +6,10 @@
  * convert an image, draw a banner. Nothing here touches the DOM, the router or
  * the clipboard; `Terminal.tsx` carries the intents out. That split keeps the
  * command set readable and lets it be exercised without a browser.
+ *
+ * `sudo` is the one exception: it picks its answer at random, which is the
+ * whole joke. It only ever runs in the browser — the terminal is loaded with
+ * `ssr: false` — so there is no server render for it to disagree with.
  */
 
 import type { Project } from "@/lib/projects";
@@ -349,17 +353,51 @@ const exit: Command = {
   run: () => ({ lines: [], intent: { kind: "close" } }),
 };
 
+/**
+ * Drawn in the same block characters as the neofetch logo, so the one rude
+ * thing on the site is at least wearing the house style.
+ */
+const FINGER = [
+  "        ▄████▄",
+  "        ██████",
+  "        ██████",
+  "        ██████",
+  "  ▄███▄ ██████ ▄███▄",
+  "  █████ ██████ █████",
+  "  ██████████████████",
+  "  ██████████████████",
+  "  ██████████████████",
+  "   ████████████████",
+  "    ██████████████",
+];
+
+/** Five answers, one picked per attempt. Four of them are only words. */
+const SUDO_REPLIES: ((target: string) => OutputLine[])[] = [
+  (target) => [
+    line(`sudo: ${target}: this whole thing runs in your browser — nobody is root here`, "muted"),
+  ],
+  () => [
+    line("sudo: bilal is not in the sudoers file. this incident will be reported.", "muted"),
+    line("reported to nobody, from your own laptop, at your own expense.", "muted"),
+  ],
+  () => [
+    line("sudo: password: ●●●●●●●●", "muted"),
+    line("wrong. there was never a password.", "muted"),
+  ],
+  (target) => [
+    line(`sudo: ${target}: nothing here to administer — it is a CV, not a cluster`, "muted"),
+  ],
+  () => FINGER.map((art) => ({ text: art, art: true }) as OutputLine),
+];
+
 const sudo: Command = {
   name: "sudo",
   summary: "Worth a try",
-  run: (args) => ({
-    lines: [
-      line(
-        `sudo: ${args.join(" ") || "that"}: this whole thing runs in your browser — nobody is root here`,
-        "muted"
-      ),
-    ],
-  }),
+  run: (args) => {
+    const target = args.join(" ") || "that";
+    const reply = SUDO_REPLIES[Math.floor(Math.random() * SUDO_REPLIES.length)];
+    return { lines: reply(target) };
+  },
 };
 
 const REGISTRY: Command[] = [
