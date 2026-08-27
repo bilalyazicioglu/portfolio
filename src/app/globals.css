@@ -86,13 +86,16 @@ body {
   font-family: var(--font-body);
 }
 
+/* The page sits on a drafting sheet: 45-degree section hatching, the way a cut
+   surface is marked on a technical drawing. Dense enough to read as a texture
+   in the margins beside the panel, light enough to stay behind everything. */
 .bg-grid {
   background-image: repeating-linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--color-ink) 7%, transparent) 0,
-    color-mix(in srgb, var(--color-ink) 7%, transparent) 1px,
+    45deg,
+    color-mix(in srgb, var(--color-ink) 10%, transparent) 0,
+    color-mix(in srgb, var(--color-ink) 10%, transparent) 1px,
     transparent 1px,
-    transparent 120px
+    transparent 9px
   );
 }
 
