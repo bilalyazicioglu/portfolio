@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/site.config";
 import { TerminalButton } from "@/components/terminal/TerminalButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const links = [
   { href: "/about", label: "About" },
@@ -52,6 +53,7 @@ export function Navbar() {
       </nav>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <TerminalButton />
         <Link
           href={`mailto:${siteConfig.email}`}

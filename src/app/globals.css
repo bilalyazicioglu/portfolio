@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #eeece6;
-  --color-surface: #fdfcf9;
-  --color-ink: #14140f;
-  --color-muted: #6d6c64;
+  /* Warm paper rather than white: the page is sand, the panel is bone, and
+     neither ever hits #fff — that flatness is what the whole design avoids. */
+  --color-canvas: #e9e5da;
+  --color-surface: #f8f5ed;
+  --color-ink: #16150f;
+  --color-muted: #6d6a5d;
   --color-accent: #14b8a6;
   --color-accent-ink: #f0fdfa;
-  --color-line: #14140f;
+  --color-line: #16150f;
 
   --font-display: var(--font-silkscreen), monospace;
   --font-ui: var(--font-jetbrains), ui-monospace, monospace;
@@ -25,8 +27,57 @@
   border-color: var(--color-line);
 }
 
-html {
+/* ---------------------------------------------------------------------------
+   Dark mode.
+
+   Every colour in the site goes through the tokens above, so a dark theme is a
+   palette swap and nothing else — no component knows which theme it is in.
+
+   Three states, the usual ones: an explicit choice stamps `data-theme` on
+   <html> (written before first paint by the script in the root layout, so the
+   page never flashes the wrong palette); with no attribute the visitor's system
+   preference decides. The literals live once, in `--dark-*`, and the two rules
+   below map them onto the real tokens.
+   --------------------------------------------------------------------------- */
+
+:root {
   color-scheme: light;
+
+  /* The same relationship upside down, in warm graphite rather than black: a
+     charcoal page with the panel raised out of it, and bone for the type. */
+  --dark-canvas: #1b1a17;
+  --dark-surface: #26241f;
+  --dark-ink: #ece7da;
+  --dark-muted: #97917f;
+  --dark-accent: #2dd4bf;
+  --dark-accent-ink: #04211d;
+  --dark-line: #ece7da;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-canvas: var(--dark-canvas);
+    --color-surface: var(--dark-surface);
+    --color-ink: var(--dark-ink);
+    --color-muted: var(--dark-muted);
+    --color-accent: var(--dark-accent);
+    --color-accent-ink: var(--dark-accent-ink);
+    --color-line: var(--dark-line);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-canvas: var(--dark-canvas);
+  --color-surface: var(--dark-surface);
+  --color-ink: var(--dark-ink);
+  --color-muted: var(--dark-muted);
+  --color-accent: var(--dark-accent);
+  --color-accent-ink: var(--dark-accent-ink);
+  --color-line: var(--dark-line);
 }
 
 body {

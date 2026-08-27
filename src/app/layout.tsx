@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TerminalProvider } from "@/components/terminal/TerminalProvider";
+import { ThemeProvider, themeScript } from "@/components/ThemeProvider";
 import { PanelFrame } from "@/components/PanelFrame";
 import { siteConfig } from "@/site.config";
 
@@ -126,8 +127,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${silkscreen.variable} ${jetbrainsMono.variable} ${inter.variable} h-full`}
+      // `data-theme` is written by the inline script below before React ever
+      // sees this element, which is exactly the mismatch React would warn about.
+      suppressHydrationWarning
     >
       <head>
+        {/* First thing in <head>, so the palette is settled before the first
+            paint rather than after it. */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon-48.png" type="image/png" sizes="48x48" />
         <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
@@ -143,15 +150,17 @@ export default function RootLayout({
       </head>
       <body className="bg-grid min-h-full flex flex-col bg-canvas text-ink antialiased">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-3 py-6 sm:px-6 sm:py-10">
-          <TerminalProvider>
-            <PanelFrame>
-              <div className="flex flex-1 flex-col">
-                <Navbar />
-                <main className="flex flex-1 flex-col">{children}</main>
-                <Footer />
-              </div>
-            </PanelFrame>
-          </TerminalProvider>
+          <ThemeProvider>
+            <TerminalProvider>
+              <PanelFrame>
+                <div className="flex flex-1 flex-col">
+                  <Navbar />
+                  <main className="flex flex-1 flex-col">{children}</main>
+                  <Footer />
+                </div>
+              </PanelFrame>
+            </TerminalProvider>
+          </ThemeProvider>
         </div>
       </body>
     </html>
