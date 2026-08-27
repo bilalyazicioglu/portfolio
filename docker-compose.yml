@@ -4,9 +4,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # Bound to loopback on purpose: the only ways in are the public reverse
-    # proxy (nginx :443, behind Cloudflare) and `tailscale serve`. Exposing this
-    # on 0.0.0.0 would let anyone with the VPS IP bypass both and reach /admin.
+    # Nothing should be able to talk to this port directly: the admin gate
+    # trusts headers that only a reverse proxy or `tailscale serve` can be
+    # relied on to set, so whoever can connect can forge their way into /admin.
+    #
+    # Loopback is the right default, but it assumes the proxy runs on this same
+    # host. On the homeserver it does not — public traffic arrives through a
+    # cloudflared *container*, which cannot see the host's loopback — so that
+    # host widens the binding from a git-ignored docker-compose.override.yml.
+    # Change it there. Editing this file on a server aborts the next `git pull`.
     ports:
       - "127.0.0.1:3000:3000"
     environment:
