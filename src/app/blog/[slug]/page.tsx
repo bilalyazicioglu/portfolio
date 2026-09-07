@@ -7,6 +7,8 @@ import { getViewCount } from "@/lib/views";
 import { CtaBand } from "@/components/CtaBand";
 import { ViewCounter } from "@/components/ViewCounter";
 
+import { siteConfig } from "@/site.config";
+
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
@@ -28,7 +30,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.summary,
       alternates: {
-        canonical: `/blog/${slug}`,
+        canonical: `${siteConfig.url}/blog/${slug}`,
       },
       openGraph: {
         locale: post.lang === "tr" ? "tr_TR" : "en_US",

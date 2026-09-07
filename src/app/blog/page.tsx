@@ -4,12 +4,13 @@ import { CtaBand } from "@/components/CtaBand";
 import { BlogList } from "@/components/BlogList";
 import { getAllPosts } from "@/lib/blog";
 import { getViewCount } from "@/lib/views";
+import { siteConfig } from "@/site.config";
 
 export const metadata: Metadata = {
   title: "Blog",
   description: "Notes on engineering, design, and process.",
   alternates: {
-    canonical: "/blog",
+    canonical: `${siteConfig.url}/blog`,
   },
 };
 

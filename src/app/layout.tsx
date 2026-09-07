@@ -35,7 +35,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   alternates: {
-    canonical: "./",
+    canonical: siteConfig.url,
   },
   title: {
     default: `${siteConfig.name} — ${siteConfig.role}`,

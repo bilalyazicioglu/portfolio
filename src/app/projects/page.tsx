@@ -3,12 +3,13 @@ import { PageHeader } from "@/components/PageHeader";
 import { ProjectsExplorer } from "@/components/ProjectsExplorer";
 import { CtaBand } from "@/components/CtaBand";
 import { projects } from "@/lib/projects";
+import { siteConfig } from "@/site.config";
 
 export const metadata: Metadata = {
   title: "Projects",
   description: "A selection of products, open source, and experiments.",
   alternates: {
-    canonical: "/projects",
+    canonical: `${siteConfig.url}/projects`,
   },
 };
 

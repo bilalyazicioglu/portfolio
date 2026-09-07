@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         // which a crawler never sends, so Googlebot fetches the bare path and
         // gets a 404 — reported in Search Console as a missing page. Nothing
         // under /cdn-cgi/ is ours or worth crawling.
-        disallow: "/cdn-cgi/",
+        disallow: ["/cdn-cgi/", "/admin/", "/api/", "/metrics"],
       },
       {
         userAgent: "Googlebot-Image",
