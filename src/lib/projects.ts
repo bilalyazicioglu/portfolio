@@ -33,10 +33,12 @@ export const projects: Project[] = [
     name: "ARpoly",
     tag: "AR",
     category: "Private",
-    badges: ["Private", "Featured"],
+    badges: ["Featured", "Live"],
     description:
       "One product in two halves. The platform is a sector-agnostic AR service: someone films an object with an ordinary phone camera, the server reconstructs it into a real-scale 3D model (GLB + USDZ) and hands it to the OS AR viewer, so a 30 cm pizza shows up 30 cm wide on the customer's own table — no app install, and no camera permission to view. It is sold as a multi-tenant REST API plus @arpoly/react, the client SDK published on npm. The other half is m3nu, the cafe vertical running on top of it: menus, categories, QR links and table orders with split payment, talking to the platform over HTTP with an API key exactly as an outside customer would — which is the point, because anything m3nu needs that a third party could not have is a bug in the platform.",
+    href: "https://arpoly.com",
     featured: true,
+    live: true,
     private: true,
     stats: [
       { label: "Platform", value: "Node + MongoDB" },
