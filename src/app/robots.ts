@@ -15,6 +15,19 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/cdn-cgi/", "/admin/", "/api/", "/metrics"],
       },
       {
+        userAgent: [
+          "GPTBot",
+          "ChatGPT-User",
+          "ClaudeBot",
+          "PerplexityBot",
+          "Google-Extended",
+          "Applebot-Extended",
+          "meta-externalagent",
+        ],
+        allow: "/",
+        disallow: ["/cdn-cgi/", "/admin/", "/api/", "/metrics"],
+      },
+      {
         userAgent: "Googlebot-Image",
         allow: "/",
       },

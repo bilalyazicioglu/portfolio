@@ -13,9 +13,40 @@ export const metadata: Metadata = {
   },
 };
 
+const projectsJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `Software Projects by ${siteConfig.name}`,
+  description: "Products, open source software, and distributed systems.",
+  itemListElement: projects.map((project, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "SoftwareApplication",
+      name: project.name,
+      description: project.description,
+      applicationCategory:
+        project.category === "Open Source"
+          ? "DeveloperApplication"
+          : "MultimediaApplication",
+      operatingSystem: "Cross-platform",
+      url: project.href ?? `${siteConfig.url}/projects`,
+      author: {
+        "@type": "Person",
+        name: siteConfig.name,
+        url: siteConfig.url,
+      },
+    },
+  })),
+};
+
 export default function ProjectsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectsJsonLd) }}
+      />
       <PageHeader
         eyebrow={`Projects [${String(projects.length).padStart(2, "0")}]`}
         titleLines={["PRO_", "JECTS"]}

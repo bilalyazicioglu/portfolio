@@ -70,8 +70,39 @@ export default async function BlogPostPage({
 
   const initialViews = getViewCount(slug);
 
+  const blogPostingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.summary,
+    datePublished: post.date,
+    dateModified: post.date,
+    inLanguage: post.lang,
+    keywords: post.tags.join(", "),
+    mainEntityOfPage: `${siteConfig.url}/blog/${slug}`,
+    url: `${siteConfig.url}/blog/${slug}`,
+    author: {
+      "@type": "Person",
+      name: siteConfig.name,
+      url: siteConfig.url,
+      sameAs: [
+        "https://github.com/bilalyazicioglu",
+        "https://www.linkedin.com/in/bilal-yazicioglu/",
+      ],
+    },
+    publisher: {
+      "@type": "Person",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingJsonLd) }}
+      />
       <div className="border-b-[1.5px] border-ink px-4 py-8 sm:px-6 sm:py-10">
         <Link
           href="/blog"
