@@ -13,6 +13,37 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${siteConfig.url}/about`,
   },
+  keywords: [
+    `About ${siteConfig.name}`,
+    `About ${siteConfig.heroName}`,
+    "Ahmet Bilal Yazıcıoğlu kimdir",
+    "Bilal Yazıcıoğlu kimdir",
+    "Bilal Yazıcıoğlu CV",
+    "Bilal Yazıcıoğlu resume",
+    "Marmara University",
+    "Universidad de Oviedo",
+    "Software Engineer",
+    "FIBA 3x3",
+  ],
+  openGraph: {
+    type: "profile",
+    title: `About ${siteConfig.name}`,
+    description: `About ${siteConfig.name}, ${siteConfig.role}.`,
+    url: `${siteConfig.url}/about`,
+    images: ["/og-image.png"],
+  },
+};
+
+const aboutJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": `${siteConfig.url}/about#webpage`,
+  url: `${siteConfig.url}/about`,
+  name: `About ${siteConfig.name}`,
+  description: siteConfig.bio,
+  mainEntity: {
+    "@id": `${siteConfig.url}/#person`,
+  },
 };
 
 const facts = [
@@ -31,6 +62,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export default function AboutPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+      />
       <PageHeader
         eyebrow="About"
         titleLines={["WHO_", "I AM"]}

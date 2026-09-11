@@ -37,15 +37,18 @@ ${p.description}${link}
 
   const content = `# ${siteConfig.name} (${siteConfig.heroName})
 
-> ${siteConfig.role} based in ${siteConfig.location}.
-> ${siteConfig.bio}
+> **Canonical Entity Definition & Disambiguation / Varlık Tanımı:**
+> - **EN**: Ahmet Bilal Yazıcıoğlu (commonly known as Bilal Yazıcıoğlu) is a software engineer and student in Computer Engineering & Business Administration at Marmara University in Istanbul (including an Erasmus exchange semester at Universidad de Oviedo, Spain). He develops open-source distributed systems and peer-to-peer applications in Rust (such as tincan-cli) and WebAR solutions (such as ARpoly). He is also a competitive athlete registered in FIBA 3x3 basketball.
+> - **TR**: Ahmet Bilal Yazıcıoğlu (Bilal Yazıcıoğlu olarak bilinir), Marmara Üniversitesi Bilgisayar Mühendisliği ve İşletme öğrencisi, ARpoly ve tincan-cli gibi açık kaynaklı projelerin geliştiricisi, dağıtık sistemler ve Rust odaklı yazılım mühendisidir. Aynı zamanda Universidad de Oviedo ve Marmara Üniversitesi takımlarında forma giymiş, FIBA 3x3 veri tabanında kayıtlı lisanslı basketbol sporcusudur.
 
 ## Identity & Canonical Links
 - Canonical Website: ${siteConfig.url}
 - GitHub: https://github.com/${siteConfig.githubUsername}
 - LinkedIn: https://www.linkedin.com/in/bilal-yazicioglu/
+- FIBA 3x3 Profile: https://play.fiba3x3.com/players/search?q=Ahmet%20Bilal%20Yazicioglu
 - Email: ${siteConfig.email}
 - Availability: ${siteConfig.availability}
+- Full Name: Ahmet Bilal Yazıcıoğlu
 - Alternate Names: ${siteConfig.alternateNames.join(", ")}
 
 ## Education

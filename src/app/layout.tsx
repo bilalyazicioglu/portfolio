@@ -57,10 +57,20 @@ export const metadata: Metadata = {
   keywords: [
     siteConfig.name,
     ...siteConfig.alternateNames,
+    "Ahmet Bilal Yazıcıoğlu kimdir",
+    "Bilal Yazıcıoğlu kimdir",
+    "Bilal Yazıcıoğlu yazılımcı",
+    "Bilal Yazıcıoğlu Marmara Üniversitesi",
+    "Bilal Yazıcıoğlu ARpoly",
+    "Bilal Yazıcıoğlu tincan",
+    "Bilal Yazıcıoğlu basketbol",
+    "Ahmet Bilal Yazıcıoğlu FIBA",
     "Computer Engineering",
     "Business Administration",
     "Marmara University",
     "Universidad de Oviedo",
+    "Rust developer",
+    "Distributed Systems",
     "Portfolio",
     "Blog",
   ],
@@ -69,6 +79,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
+    alternateLocale: ["tr_TR"],
     url: siteConfig.url,
     title: `${siteConfig.name} — ${siteConfig.role}`,
     description: siteConfig.bio,
@@ -93,19 +104,34 @@ export const metadata: Metadata = {
 const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
+  "@id": `${siteConfig.url}/#person`,
   name: siteConfig.name,
   alternateName: siteConfig.alternateNames,
   url: siteConfig.url,
   image: `${siteConfig.url}/icon-512.png`,
   jobTitle: siteConfig.role,
   description: siteConfig.bio,
+  disambiguatingDescription:
+    "Ahmet Bilal Yazıcıoğlu (Bilal Yazıcıoğlu) is a Turkish software engineer, computer engineering and business administration student at Marmara University (and Erasmus alumnus at Universidad de Oviedo), creator of ARpoly and tincan-cli, and a competitive basketball player registered in FIBA 3x3.",
+  knowsLanguage: ["en", "tr", "es"],
   email: siteConfig.email,
   sameAs: [
     "https://github.com/bilalyazicioglu",
     "https://www.linkedin.com/in/bilal-yazicioglu/",
+    "https://play.fiba3x3.com/players/search?q=Ahmet%20Bilal%20Yazicioglu",
     "https://www.npmjs.com/package/@arpoly/react",
     "https://github.com/bilalyazicioglu/tincan-cli",
     "https://github.com/bilalyazicioglu/portfolio",
+  ],
+  memberOf: [
+    {
+      "@type": "SportsTeam",
+      name: "Marmara University Basketball Team",
+    },
+    {
+      "@type": "SportsTeam",
+      name: "Universidad de Oviedo Basketball Team",
+    },
   ],
   hasOccupation: {
     "@type": "Occupation",
@@ -146,9 +172,21 @@ const personJsonLd = {
 const webSiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${siteConfig.url}/#website`,
   name: siteConfig.name,
   url: siteConfig.url,
   image: `${siteConfig.url}/og-image.png`,
+};
+
+const profilePageJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "@id": `${siteConfig.url}/#profilepage`,
+  url: siteConfig.url,
+  name: `${siteConfig.name} — Profile`,
+  mainEntity: {
+    "@id": `${siteConfig.url}/#person`,
+  },
 };
 
 export default function RootLayout({
@@ -177,7 +215,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([personJsonLd, webSiteJsonLd]),
+            __html: JSON.stringify([personJsonLd, webSiteJsonLd, profilePageJsonLd]),
           }}
         />
       </head>
